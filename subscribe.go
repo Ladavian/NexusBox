@@ -368,7 +368,7 @@ func patchSubscriptionFile(filePath string, cfg SubscribeConfig) error {
     conflictKeys := []string{"port", "socks-port", "redir-port"}
     for _, k := range conflictKeys {
         reConflict := regexp.MustCompile(`(?m)^` + regexp.QuoteMeta(k) + `:\s*\d+\s*$`)
-        text = reConflict.ReplaceAllString(text, "# "+k+" removed by Fluxor")
+        text = reConflict.ReplaceAllString(text, "# "+k+" removed by NexusBox")
     }
 
     // 定义待替换/添加的字段

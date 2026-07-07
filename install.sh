@@ -16,7 +16,7 @@ set -e
 # ============================================================
 
 M_API="https://api.github.com/repos/MetaCubeX/mihomo/releases/latest"
-F_API="https://api.github.com/repos/shuangji66/nexusbox/releases/latest"
+F_API="https://api.github.com/repos/Ladavian/NexusBox/releases/latest"
 INSTALL_DIR="/opt/nexusbox"
 MIHOMO_DIR="/opt/mihomo"
 CONFIG_DIR="/opt/config"
@@ -98,7 +98,7 @@ install_nexusbox() {
  VER=$(curl -fsSL "$F_API" 2>/dev/null | grep '"tag_name"' | head -1 | cut -d'"' -f4 || echo "")
  if [ -n "$VER" ]; then
   BIN_NAME="nexusbox-${ARCH}"
-  URL="https://github.com/shuangji66/nexusbox/releases/download/${VER}/${BIN_NAME}"
+  URL="https://github.com/Ladavian/NexusBox/releases/download/${VER}/${BIN_NAME}"
   msg "尝试下载 NexusBox ${VER} (${ARCH})..."
   if curl -fSL --connect-timeout 30 --retry 3 "$URL" -o "$INSTALL_DIR/nexusbox" 2>/dev/null; then
    chmod +x "$INSTALL_DIR/nexusbox"
@@ -115,7 +115,7 @@ install_nexusbox() {
   if [ "$(echo "$GO_VER >= 1.21" | bc -l 2>/dev/null || echo 0)" = "1" ] || [ "${GO_VER%%.*}" -ge 1 -a "${GO_VER##*.}" -ge 21 ] 2>/dev/null; then
    BUILD_DIR="/tmp/nexusbox-build"
    rm -rf "$BUILD_DIR"
-   git clone --depth 1 https://github.com/shuangji66/nexusbox.git "$BUILD_DIR" 2>/dev/null || {
+   git clone --depth 1 https://github.com/Ladavian/NexusBox.git "$BUILD_DIR" 2>/dev/null || {
     warn "克隆仓库失败"
     return 1
    }

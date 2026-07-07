@@ -139,7 +139,7 @@ func main() {
 
 		originalBaseURL = baseURL
 
-		fmt.Printf("Fluxor 运行于 OpenWrt 模式，监听 TCP %s\n", tcpAddr)
+		fmt.Printf("NexusBox 运行于 OpenWrt 模式，监听 TCP %s\n", tcpAddr)
 	} else {
 		// 非 OpenWrt 模式：若指定了 -a，则覆盖 tcpAddr（仍可配合 Unix socket 共存）
 		if customAddr != "" {
@@ -390,7 +390,7 @@ func main() {
 	}
 	if tcpListener != nil {
 		go func() {
-			fmt.Printf("Fluxor TCP 服务已启动，监听: %s\n", tcpAddr)
+			fmt.Printf("NexusBox TCP 服务已启动，监听: %s\n", tcpAddr)
 			if err := http.Serve(tcpListener, mux); err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 				fmt.Printf("TCP HTTP 服务错误: %v\n", err)
 			}
@@ -402,7 +402,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	fmt.Printf("收到退出信号，正在关闭 Fluxor...\n")
+	fmt.Printf("收到退出信号，正在关闭 NexusBox...\n")
 	stopAllTimers()
 	disableTProxyRules()
 	if isCoreRunning() {
@@ -412,7 +412,7 @@ func main() {
 	} else {
 		fmt.Printf("内核未运行，无需停止\n")
 	}
-	fmt.Printf("Fluxor 已安全退出\n")
+	fmt.Printf("NexusBox 已安全退出\n")
 }
 
 // wsProxyHandler 保持不变

@@ -1,4 +1,4 @@
-name: Build and Release fluxor
+name: Build and Release nexusbox
 
 on:
   workflow_dispatch:
@@ -45,13 +45,13 @@ jobs:
 
       - name: 构建 Go 后端（${{ matrix.arch }}）
         run: |
-          GOOS=linux GOARCH=${{ matrix.arch }} go build -tags vue -ldflags="-s -w" -o fluxor-${{ matrix.arch }}
+          GOOS=linux GOARCH=${{ matrix.arch }} go build -tags vue -ldflags="-s -w" -o nexusbox-${{ matrix.arch }}
 
-      - name: 上传 fluxor-${{ matrix.arch }} 作为 Artifact
+      - name: 上传 nexusbox-${{ matrix.arch }} 作为 Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: fluxor-${{ matrix.arch }}
-          path: fluxor-${{ matrix.arch }}
+          name: nexusbox-${{ matrix.arch }}
+          path: nexusbox-${{ matrix.arch }}
 
   release:
     needs: build
@@ -97,7 +97,7 @@ jobs:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           name: ${{ steps.get_version.outputs.VERSION }}
           body: ${{ steps.get_notes.outputs.NOTES }}
-          files: artifacts/**/fluxor-*
+          files: artifacts/**/nexusbox-*
           draft: false
           prerelease: false
           allow_updates: true

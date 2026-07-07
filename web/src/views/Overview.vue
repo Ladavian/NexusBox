@@ -509,14 +509,14 @@ const delayResults = ref<DelayTestResult[]>(
   delayTargets.map(t => ({ ...t, delay: null, loading: false, tested: false }))
 )
 
-const customUrl = ref(localStorage.getItem('fluxor-custom-delay-url') || '')
+const customUrl = ref(localStorage.getItem('nexusbox-custom-delay-url') || '')
 const customDelay = ref<number | null>(null)
 const customLoading = ref(false)
 const customTested = ref(false)
 
 // 监听自定义延迟测试网址的变化并自动持久化
 watch(customUrl, (newVal) => {
-  localStorage.setItem('fluxor-custom-delay-url', newVal)
+  localStorage.setItem('nexusbox-custom-delay-url', newVal)
 })
 
 const isTestingDelay = ref(false)

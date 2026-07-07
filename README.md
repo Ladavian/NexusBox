@@ -1,61 +1,91 @@
-# NexusBox
+# 🚀 NexusBox
 
-`NexusBox` 是一个轻量级、无冗余的 Mihomo (Clash.Meta) 内核管理面板与订阅生成系统。该系统采用前后端一体化设计，支持自动化配置生成、透明代理（TProxy）管理以及实时的内核状态监控。
+> 轻量级 Mihomo (Clash.Meta) 内核管理面板 | 基于 [Fluxor](https://github.com/shuangji66/fluxor) 二次开发
 
----
-
-## 核心特性
-
-- **内核管理**：支持 Mihomo 二进制进程启动、停止、状态查询及配置热重载。
-- **订阅中心**：提供订阅链接的 CRUD 管理，支持解析并生成内核 `config.yaml` 配置文件，并可自动应用。
-- **实时监控**：基于 WebSocket 协议，实时中转并呈现上传与下载流量速度、内存占用、内核日志流及连接历史。
-- **透明代理 (TProxy)**：集成了 nftables 防火墙透明代理及路由例外控制，支持本机出站代理开关及例外 IP 与端口过滤。
-- **双前端支持**：
-  - **Vue 3 现代版 (推荐)**：采用 Vue 3 与 TypeScript 构建，提供高性能的客户端交互体验，源码位于 `web/` 目录。
-  - **Vanilla JS 原生版**：零构建步骤，直接原生加载，适合轻量级环境，源码位于 `static/` 目录。
+NexusBox 是一个前后端一体化的 Web 管理面板，专为 Mihomo 内核设计。在 Fluxor 的基础上新增了 **账户认证**、**YAML 在线编辑器** 等实用功能，让裸核管理更加安全便捷。
 
 ---
 
-## 技术栈
+## ✨ 新特性（vs Fluxor）
 
-### 后端
-- **核心语言**：Go 1.26 (标准库)
-- **外部依赖**：`gorilla/websocket` (唯一外部依赖)
-
-### 前端 (Vue 3 现代版)
-- **核心框架**：Vue 3 (Composition API) + TypeScript
-- **状态管理**：Pinia
-- **构建工具**：Vite 5
-- **样式方案**：Tailwind CSS 3 (支持 data-theme 亮暗切换)
-- **国际化**：vue-i18n 9
-- **网络通信**：fetch (HTTP) + WebSocket (实时数据流)
+- 🔐 **账密登录认证** — Cookie Session 机制，防止面板被外网扫描滥用
+- 📝 **YAML 在线编辑器** — Web 端直接查看/编辑 `config.yaml`，保存即热重载
+- 🎨 **精简主题** — 浅色 / 深色 / 跟随系统
+- 🔓 **解除互斥** — TUN 与 TProxy 可同时启用
+- 📦 **一键安装脚本** — 自动拉取 Mihomo 内核 + 注册 systemd 服务
 
 ---
 
-## 本地开发
+## 📂 目录结构
 
-### 1. 前端开发
-进入 `web/` 目录进行前端热更新开发：
-```bash
-cd web
-npm install
-npm run dev
 ```
-
-### 2. 后端开发
-Go 后端开发与运行：
-```bash
-# 默认构建（嵌入旧版 Vanilla JS 前端）
-go build
-
-# 编译 Vue 3 前端现代版
-cd web && npm run build && cd ..
-go build -tags vue
+/opt/nexusbox/        # NexusBox 面板程序
+  ├── nexusbox        # 主二进制
+  └── var/            # 运行时数据
+/opt/mihomo/          # Mihomo 内核
+  └── mihomo
+/opt/config/          # 配置文件
+  ├── config.yaml     # 内核配置
+  └── nexusbox.json   # 面板配置（订阅/账户）
 ```
 
 ---
 
-## 开发者指南
+## 🚀 快速安装
 
-关于详细的目录结构、路由 API 对照表、前后端通信机制、TProxy 防火墙安全性设计及 Tailwind UI 样式规范等深度技术规约，请阅读 [AGENTS.md](AGENTS.md)。
+```bash
+curl -fsSL https://raw.githubusercontent.com/Ladavian/NexusBox/main/install.sh | bash
+```
 
+安装后访问 **`http://<服务器IP>:18080`**
+
+**默认账户：`admin` / `admin`**
+
+---
+
+## 🔧 手动构建
+
+```bash
+# 1. 前端
+cd web && npm install && npm run build && cd ..
+
+# 2. 后端（嵌入 Vue 前端）
+go build -tags vue -o nexusbox
+
+# 3. 启动
+./nexusbox
+```
+
+---
+
+## 🧩 核心特性
+
+- **内核生命周期管理**：启动、停止、状态查询、配置热重载
+- **订阅中心**：订阅链接的 CRUD 管理，自动生成 `config.yaml` 并应用
+- **实时监控**：WebSocket 实时推送上/下载速度、内存、日志流、连接历史
+- **透明代理 (TProxy)**：nftables 透明代理，端口/源地址例外过滤
+- **双前端**：Vue 3 (推荐) + 原生 Vanilla JS
+- **YAML 编辑器**：暗色终端风格，保存即热重载
+- **登录认证**：Cookie Session，24h 有效期
+
+---
+
+## 🛠 技术栈
+
+| 层 | 技术 |
+|---|---|
+| 后端 | Go 1.26 (标准库) + gorilla/websocket |
+| 前端 | Vue 3 + TypeScript + Pinia + Vite + Tailwind CSS |
+| 国际化 | vue-i18n (中文/English) |
+
+---
+
+## 🙏 致敬
+
+本项目基于 [**shuangji66/fluxor**](https://github.com/shuangji66/fluxor) 二次开发。感谢原作者提供的优秀面板框架！
+
+---
+
+## 📄 License
+
+MIT

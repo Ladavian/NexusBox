@@ -1,4 +1,4 @@
-name: Build fluxor-amd64
+name: Build nexusbox-amd64
 
 on:
   workflow_dispatch:
@@ -44,10 +44,10 @@ jobs:
 
       - name: 构建 Go 后端（amd64）
         run: |
-          GOOS=linux GOARCH=amd64 go build -tags vue -ldflags="-s -w" -o fluxor
+          GOOS=linux GOARCH=amd64 go build -tags vue -ldflags="-s -w" -o nexusbox
 
-      - name: 上传 fluxor 二进制作为 Artifact
+      - name: 上传 nexusbox 二进制作为 Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: fluxor
-          path: fluxor
+          name: nexusbox
+          path: nexusbox

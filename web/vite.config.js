@@ -19,7 +19,7 @@ function nexusboxBuildPlugin() {
             fs.unlinkSync(filePath)
           }
         }
-        console.log('[Fluxor] Cleared old assets in dist/static/assets')
+        console.log('[NexusBox] Cleared old assets in dist/static/assets')
       }
     },
     closeBundle() {
@@ -33,7 +33,7 @@ function nexusboxBuildPlugin() {
           fs.mkdirSync(targetDir, { recursive: true })
         }
         fs.renameSync(indexHtml, targetHtml)
-        console.log('[Fluxor] Successfully relocated index.html to dist/static/html/index.html')
+        console.log('[NexusBox] Successfully relocated index.html to dist/static/html/index.html')
       }
     }
   }
