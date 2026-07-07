@@ -10,8 +10,6 @@ import {
   LanguageOutline,
   SunnyOutline,
   MoonOutline,
-  ColorPaletteOutline,
-  HeartOutline,
   ContrastOutline,
   ChevronBackOutline,
   ChevronForwardOutline,
@@ -27,7 +25,7 @@ import {
   CloseCircleOutline,
   AlertCircleOutline,
   CloseOutline,
-  ApertureOutline
+  PaperPlaneOutline
 } from '@vicons/ionicons5'
 
 // 视图组件导入
@@ -268,7 +266,7 @@ onUnmounted(() => {
           <!-- 应用 Logo 图标 -->
           <div class="w-8 h-8 flex items-center justify-center shrink-0 transition-transform duration-500 text-accent"
                :class="globalStore.isSidebarCollapsed ? 'rotate-180' : 'rotate-0'">
-            <ApertureOutline class="w-5.5 h-5.5" />
+            <PaperPlaneOutline class="w-5.5 h-5.5" />
           </div>
           <!-- 标题，随折叠平滑收缩 -->
           <span class="font-bold text-sm text-slate-700 dark:text-slate-200 tracking-wider transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden"
@@ -441,8 +439,6 @@ onUnmounted(() => {
               :title="t('config.theme') + ': ' + t('config.theme_' + globalStore.theme)">
               <SunnyOutline v-if="globalStore.theme === 'light'" class="w-4 h-4 shrink-0 sidebar-bottom-icon text-amber-500 group-hover:scale-110 group-hover:rotate-45" />
               <MoonOutline v-else-if="globalStore.theme === 'dark'" class="w-4 h-4 shrink-0 sidebar-bottom-icon text-indigo-400 group-hover:scale-110 group-hover:-rotate-12" />
-              <ColorPaletteOutline v-else-if="globalStore.theme === 'purple'" class="w-4 h-4 shrink-0 sidebar-bottom-icon text-purple-500 dark:text-purple-400 group-hover:scale-110 group-hover:-rotate-12" />
-              <HeartOutline v-else-if="globalStore.theme === 'pink'" class="w-4 h-4 shrink-0 sidebar-bottom-icon text-rose-500 group-hover:scale-110 group-hover:-rotate-12" />
               <ContrastOutline v-else class="w-4 h-4 shrink-0 sidebar-bottom-icon text-slate-500 dark:text-slate-400 group-hover:scale-110 group-hover:-rotate-12" />
               <span class="transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden"
                 :class="globalStore.isSidebarCollapsed ? 'opacity-0 max-w-0 ml-0' : 'opacity-100 max-w-20 ml-1.5'">
