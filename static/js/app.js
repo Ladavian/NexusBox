@@ -70,7 +70,7 @@
     function updateTitle() {
         const pageKey = 'nav.' + currentPage;
         const pageName = (window.i18n && window.i18n.t) ? window.i18n.t(pageKey) : currentPage;
-        document.title = 'Fluxor - ' + pageName;
+        document.title = 'NexusBox - ' + pageName;
     }
 
     function updateSidebarLabels() {
@@ -169,7 +169,7 @@
 
         const isMobile = () => window.innerWidth <= 768;
 
-        if (!isMobile() && localStorage.getItem('fluxor-sidebar-collapsed') === 'true') {
+        if (!isMobile() && localStorage.getItem('nexusbox-sidebar-collapsed') === 'true') {
             sidebar.classList.add('collapsed');
         }
 
@@ -179,7 +179,7 @@
                 if (overlay) overlay.classList.toggle('active', sidebar.classList.contains('open'));
             } else {
                 sidebar.classList.toggle('collapsed');
-                localStorage.setItem('fluxor-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+                localStorage.setItem('nexusbox-sidebar-collapsed', sidebar.classList.contains('collapsed'));
                 if (toggleBtn && toggleBtn._updateIcon) toggleBtn._updateIcon();
             }
         }
@@ -201,7 +201,7 @@
             if (prevMobile !== nowMobile) {
                 sidebar.classList.remove('open', 'collapsed');
                 if (overlay) overlay.classList.remove('active');
-                if (!nowMobile && localStorage.getItem('fluxor-sidebar-collapsed') === 'true') {
+                if (!nowMobile && localStorage.getItem('nexusbox-sidebar-collapsed') === 'true') {
                     sidebar.classList.add('collapsed');
                 }
                 prevMobile = nowMobile;
@@ -275,7 +275,7 @@
         const topbar = document.createElement('div');
         topbar.id = 'mobile-topbar';
         topbar.innerHTML = `
-            <span class="topbar-title" id="mobileTitle">Fluxor</span>
+            <span class="topbar-title" id="mobileTitle">NexusBox</span>
             <div class="topbar-actions">
                 <button id="mobileLangToggle" aria-label="Switch Language">
                     <span id="mobileCurrentLang">简</span>
@@ -347,7 +347,7 @@
                 systemListener = null;
             }
 
-            localStorage.setItem('fluxor-theme', theme);
+            localStorage.setItem('nexusbox-theme', theme);
 
             let effectiveTheme = theme;
             if (theme === 'system') {
@@ -369,7 +369,7 @@
         }
 
         function getTheme() {
-            return localStorage.getItem('fluxor-theme') || 'system';
+            return localStorage.getItem('nexusbox-theme') || 'system';
         }
 
         window.themeManager = { setTheme, getTheme };

@@ -53,7 +53,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         <div class="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
           <LockClosedOutline class="w-7 h-7 text-accent" />
         </div>
-        <h2 class="text-xl font-extrabold text-slate-800 dark:text-slate-100 tracking-wide">Fluxor</h2>
+        <h2 class="text-xl font-extrabold text-slate-800 dark:text-slate-100 tracking-wide">NexusBox</h2>
         <p class="text-xs text-slate-400 dark:text-slate-500">{{ t('login.title') }}</p>
       </div>
 

@@ -18,7 +18,7 @@ export function useTheme() {
   }
 
   watch(() => globalStore.theme, (newTheme: string) => {
-    localStorage.setItem('fluxor-theme', newTheme)
+    localStorage.setItem('nexusbox-theme', newTheme)
     applyTheme(newTheme)
   })
 

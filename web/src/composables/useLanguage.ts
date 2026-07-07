@@ -11,7 +11,7 @@ export function useLanguage() {
   })
 
   const updateTitle = (tabName: string) => {
-    document.title = 'Fluxor - ' + t('nav.' + tabName)
+    document.title = 'NexusBox - ' + t('nav.' + tabName)
   }
 
   const toggleLanguage = () => {

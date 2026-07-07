@@ -188,7 +188,7 @@ const columnDefs: ColumnDef[] = [
 ]
 
 // ========== 列可见性状态 ==========
-const STORAGE_KEY = 'fluxor-connections-columns'
+const STORAGE_KEY = 'nexusbox-connections-columns'
 const loadColumnVisibility = (): Record<string, boolean> => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
