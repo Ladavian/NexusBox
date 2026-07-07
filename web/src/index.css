@@ -1,0 +1,1028 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1. 主题变量 */
+
+:root {
+  /* 默认暗色 */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-input: #1e293b;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --sidebar-bg: #1e293b;
+  --card-bg: #1e293b;
+  --hover-bg: rgba(255, 255, 255, 0.08);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --btn-secondary-bg: #2d3748;
+  --btn-secondary-hover-bg: rgba(255, 255, 255, 0.12);
+
+  /* 默认磨砂玻璃 */
+  --bg-glass-heavy: rgba(23, 31, 48, 0.65);
+  --bg-glass-medium: rgba(23, 31, 48, 0.45);
+  --bg-glass-light: rgba(23, 31, 48, 0.25);
+  --bg-mask: rgba(15, 23, 42, 0.5);
+  --border-glass: rgba(255, 255, 255, 0.06);
+
+  /* 全局交互与滚动条 */
+  --scrollbar-thumb: rgba(148, 163, 184, 0.2);
+  --scrollbar-thumb-hover: rgba(148, 163, 184, 0.4);
+  --focus-ring: rgba(59, 130, 246, 0.2);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(59, 130, 246, 0.25);
+}
+
+[data-theme="light"] {
+  /* 浅色主题 */
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-color: #cbd5e1;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --success: #059669;
+  --warning: #d97706;
+  --sidebar-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(15, 23, 42, 0.04);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --btn-secondary-bg: #e8ecf0;
+  --btn-secondary-hover-bg: rgba(15, 23, 42, 0.08);
+
+  /* 浅色磨砂玻璃 */
+  --bg-glass-heavy: rgba(255, 255, 255, 0.65);
+  --bg-glass-medium: rgba(255, 255, 255, 0.45);
+  --bg-glass-light: rgba(255, 255, 255, 0.25);
+  --bg-mask: rgba(15, 23, 42, 0.2);
+  --border-glass: rgba(15, 23, 42, 0.06);
+
+  /* 浅色交互与滚动条 */
+  --scrollbar-thumb: rgba(15, 23, 42, 0.15);
+  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.3);
+  --focus-ring: rgba(59, 130, 246, 0.2);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="purple"] {
+  /* 紫色主题 */
+  --bg-primary: #0a0516;
+  --bg-secondary: #120a24;
+  --bg-card: #120a24;
+  --bg-input: #1b0f35;
+  --text-primary: #f3e8ff;
+  --text-secondary: #a78bfa;
+  --border-color: #2e1065;
+  --accent: #c084fc;
+  --accent-hover: #a855f7;
+  --danger: #f43f5e;
+  --danger-hover: #e11d48;
+  --success: #10b981;
+  --warning: #fbbf24;
+  --sidebar-bg: #0e071e;
+  --card-bg: #120a24;
+  --hover-bg: rgba(192, 132, 252, 0.12);
+  --shadow: 0 8px 30px rgba(147, 51, 234, 0.12);
+  --btn-secondary-bg: #1e113a;
+  --btn-secondary-hover-bg: rgba(192, 132, 252, 0.18);
+
+  /* 紫色磨砂玻璃 */
+  --bg-glass-heavy: rgba(10, 5, 22, 0.65);
+  --bg-glass-medium: rgba(10, 5, 22, 0.45);
+  --bg-glass-light: rgba(18, 10, 36, 0.25);
+  --bg-mask: rgba(10, 5, 22, 0.5);
+  --border-glass: rgba(192, 132, 252, 0.15);
+
+  /* 紫色交互与滚动条 */
+  --scrollbar-thumb: rgba(168, 85, 247, 0.2);
+  --scrollbar-thumb-hover: rgba(168, 85, 247, 0.4);
+  --focus-ring: rgba(192, 132, 252, 0.25);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #0a0516;
+  /* 深紫字色 */
+  --sidebar-active-shadow: rgba(192, 132, 252, 0.25);
+}
+
+[data-theme="pink"] {
+  /* 粉色主题 */
+  --bg-primary: #fff1f2;
+  --bg-secondary: #ffffff;
+  --bg-card: #fff1f2;
+  --bg-input: #ffffff;
+  --text-primary: #881337;
+  --text-secondary: #e11d48;
+  --border-color: #ffe4e6;
+  --accent: #f43f5e;
+  --accent-hover: #e11d48;
+  --danger: #e11d48;
+  --danger-hover: #be123c;
+  --success: #059669;
+  --warning: #d97706;
+  --sidebar-bg: #fff1f2;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(244, 63, 94, 0.06);
+  --shadow: 0 8px 30px rgba(244, 63, 94, 0.08);
+  --btn-secondary-bg: #fff1f2;
+  --btn-secondary-hover-bg: rgba(244, 63, 94, 0.12);
+
+  /* 粉色磨砂玻璃 */
+  --bg-glass-heavy: rgba(255, 255, 255, 0.65);
+  --bg-glass-medium: rgba(255, 255, 255, 0.45);
+  --bg-glass-light: rgba(255, 241, 242, 0.25);
+  --bg-mask: rgba(136, 19, 55, 0.12);
+  --border-glass: rgba(244, 63, 94, 0.12);
+
+  /* 粉色交互与滚动条 */
+  --scrollbar-thumb: rgba(244, 63, 94, 0.2);
+  --scrollbar-thumb-hover: rgba(244, 63, 94, 0.4);
+  --focus-ring: rgba(244, 63, 94, 0.2);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(244, 63, 94, 0.20);
+}
+
+[data-theme="green"] {
+  /* 抹茶绿主题 (浅翠绿) */
+  --bg-primary: #f0fdf4;
+  --bg-secondary: #ffffff;
+  --bg-card: #f0fdf4;
+  --bg-input: #eafcf0;
+  --text-primary: #052e16;
+  --text-secondary: #166534;
+  --border-color: #dcfce7;
+  --accent: #34c759;
+  --accent-hover: #2f9e44;
+  --danger: #ff3b30;
+  --danger-hover: #e03131;
+  --success: #34c759;
+  --warning: #ff9500;
+  --sidebar-bg: #f5fdf7;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(52, 199, 89, 0.05);
+  --shadow: none;
+  --btn-secondary-bg: #dcfce7;
+  --btn-secondary-hover-bg: rgba(52, 199, 89, 0.12);
+
+  /* 抹茶绿磨砂玻璃 */
+  --bg-glass-heavy: rgba(255, 255, 255, 0.65);
+  --bg-glass-medium: rgba(255, 255, 255, 0.45);
+  --bg-glass-light: rgba(240, 253, 244, 0.25);
+  --bg-mask: rgba(5, 46, 22, 0.12);
+  --border-glass: rgba(52, 199, 89, 0.12);
+
+  /* 抹茶绿交互与滚动条 */
+  --scrollbar-thumb: rgba(52, 199, 89, 0.15);
+  --scrollbar-thumb-hover: rgba(52, 199, 89, 0.3);
+  --focus-ring: rgba(52, 199, 89, 0.2);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(52, 199, 89, 0.15);
+}
+
+[data-theme="blue"] {
+  /* 冰海蓝主题 */
+  --bg-primary: #f0f9ff;
+  --bg-secondary: #ffffff;
+  --bg-card: #f0f9ff;
+  --bg-input: #e6f4fe;
+  --text-primary: #082f49;
+  --text-secondary: #075985;
+  --border-color: #e0f2fe;
+  --accent: #007aff;
+  --accent-hover: #0056b3;
+  --danger: #ff3b30;
+  --danger-hover: #c92a2a;
+  --success: #34c759;
+  --warning: #ff9500;
+  --sidebar-bg: #f5faff;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(0, 122, 255, 0.05);
+  --shadow: none;
+  --btn-secondary-bg: #e0f2fe;
+  --btn-secondary-hover-bg: rgba(0, 122, 255, 0.12);
+
+  /* 冰海蓝磨砂玻璃 */
+  --bg-glass-heavy: rgba(255, 255, 255, 0.65);
+  --bg-glass-medium: rgba(255, 255, 255, 0.45);
+  --bg-glass-light: rgba(240, 249, 255, 0.25);
+  --bg-mask: rgba(8, 47, 73, 0.12);
+  --border-glass: rgba(0, 122, 255, 0.12);
+
+  /* 冰海蓝交互与滚动条 */
+  --scrollbar-thumb: rgba(0, 122, 255, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 122, 255, 0.3);
+  --focus-ring: rgba(0, 122, 255, 0.2);
+
+  /* 侧边栏激活高对比 */
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: #ffffff;
+  --sidebar-active-shadow: rgba(0, 122, 255, 0.15);
+}
+
+/* 2. 主题覆盖 */
+
+/* 紫色主题 */
+[data-theme="purple"] .bg-white,
+[data-theme="purple"] .dark\:bg-\[\#1e293b\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="purple"] .bg-\[\#f1f5f9\],
+[data-theme="purple"] .dark\:bg-\[\#0f172a\] {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="purple"] .bg-slate-50,
+[data-theme="purple"] .bg-slate-100,
+[data-theme="purple"] .bg-slate-200\/80,
+[data-theme="purple"] .dark\:bg-slate-800,
+[data-theme="purple"] .dark\:bg-slate-800\/40,
+[data-theme="purple"] .dark\:bg-slate-800\/50,
+[data-theme="purple"] .dark\:bg-slate-800\/80 {
+  background-color: var(--btn-secondary-bg) !important;
+}
+
+[data-theme="purple"] .hover\:bg-slate-100:hover,
+[data-theme="purple"] .hover\:bg-slate-200:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-700:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-800:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-700\/60:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-700\/80:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-800\/80:hover {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="purple"] .border-slate-100,
+[data-theme="purple"] .border-slate-200,
+[data-theme="purple"] .border-slate-100\/50,
+[data-theme="purple"] .border-slate-200\/80,
+[data-theme="purple"] .dark\:border-slate-800,
+[data-theme="purple"] .dark\:border-slate-800\/80,
+[data-theme="purple"] .dark\:border-slate-800\/60,
+[data-theme="purple"] .dark\:border-slate-800\/50,
+[data-theme="purple"] .dark\:border-slate-800\/40,
+[data-theme="purple"] .dark\:border-slate-800\/30 {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="purple"] .text-slate-800,
+[data-theme="purple"] .dark\:text-slate-100,
+[data-theme="purple"] .text-slate-700,
+[data-theme="purple"] .dark\:text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="purple"] .text-slate-400,
+[data-theme="purple"] .text-slate-500,
+[data-theme="purple"] .text-slate-600,
+[data-theme="purple"] .dark\:text-slate-300,
+[data-theme="purple"] .dark\:text-slate-400,
+[data-theme="purple"] .dark\:text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="purple"] .bg-slate-50\/50,
+[data-theme="purple"] .dark\:bg-slate-900\/30 {
+  background-color: rgba(27, 15, 53, 0.45) !important;
+}
+
+[data-theme="purple"] .hover\:bg-slate-50\/50:hover,
+[data-theme="purple"] .dark\:hover\:bg-slate-900\/10:hover {
+  background-color: rgba(168, 85, 247, 0.06) !important;
+}
+
+[data-theme="purple"] .bg-slate-200,
+[data-theme="purple"] .dark\:bg-slate-700 {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="purple"] .bg-white.shadow-sm,
+[data-theme="purple"] .dark\:bg-slate-700.shadow-sm {
+  background-color: var(--hover-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="purple"] aside {
+  background-color: var(--bg-glass-heavy) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 粉色主题 */
+[data-theme="pink"] .bg-white,
+[data-theme="pink"] .dark\:bg-\[\#1e293b\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="pink"] .bg-\[\#f1f5f9\],
+[data-theme="pink"] .dark\:bg-\[\#0f172a\] {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="pink"] .bg-slate-50,
+[data-theme="pink"] .bg-slate-100,
+[data-theme="pink"] .bg-slate-200\/80,
+[data-theme="pink"] .dark\:bg-slate-800,
+[data-theme="pink"] .dark\:bg-slate-800\/40,
+[data-theme="pink"] .dark\:bg-slate-800\/50,
+[data-theme="pink"] .dark\:bg-slate-800\/80 {
+  background-color: var(--btn-secondary-bg) !important;
+}
+
+[data-theme="pink"] .hover\:bg-slate-100:hover,
+[data-theme="pink"] .hover\:bg-slate-200:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-700:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-800:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-700\/60:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-700\/80:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-800\/80:hover {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="pink"] .border-slate-100,
+[data-theme="pink"] .border-slate-200,
+[data-theme="pink"] .border-slate-100\/50,
+[data-theme="pink"] .border-slate-200\/80,
+[data-theme="pink"] .dark\:border-slate-800,
+[data-theme="pink"] .dark\:border-slate-800\/80,
+[data-theme="pink"] .dark\:border-slate-800\/60,
+[data-theme="pink"] .dark\:border-slate-800\/50,
+[data-theme="pink"] .dark\:border-slate-800\/40,
+[data-theme="pink"] .dark\:border-slate-800\/30 {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="pink"] .text-slate-800,
+[data-theme="pink"] .dark\:text-slate-100,
+[data-theme="pink"] .text-slate-700,
+[data-theme="pink"] .dark\:text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="pink"] .text-slate-400,
+[data-theme="pink"] .text-slate-500,
+[data-theme="pink"] .text-slate-600,
+[data-theme="pink"] .dark\:text-slate-300,
+[data-theme="pink"] .dark\:text-slate-400,
+[data-theme="pink"] .dark\:text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="pink"] .bg-slate-50\/50,
+[data-theme="pink"] .dark\:bg-slate-900\/30 {
+  background-color: rgba(255, 241, 242, 0.50) !important;
+}
+
+[data-theme="pink"] .hover\:bg-slate-50\/50:hover,
+[data-theme="pink"] .dark\:hover\:bg-slate-900\/10:hover {
+  background-color: rgba(244, 63, 94, 0.05) !important;
+}
+
+[data-theme="pink"] .bg-slate-200,
+[data-theme="pink"] .dark\:bg-slate-700 {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="pink"] .bg-white.shadow-sm,
+[data-theme="pink"] .dark\:bg-slate-700.shadow-sm {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="pink"] aside {
+  background-color: var(--bg-glass-heavy) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 抹茶绿主题 */
+[data-theme="green"] .bg-white,
+[data-theme="green"] .dark\:bg-\[\#1e293b\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="green"] .bg-\[\#f1f5f9\],
+[data-theme="green"] .dark\:bg-\[\#0f172a\] {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="green"] .bg-slate-50,
+[data-theme="green"] .bg-slate-100,
+[data-theme="green"] .bg-slate-200\/80,
+[data-theme="green"] .dark\:bg-slate-800,
+[data-theme="green"] .dark\:bg-slate-800\/40,
+[data-theme="green"] .dark\:bg-slate-800\/50,
+[data-theme="green"] .dark\:bg-slate-800\/80 {
+  background-color: var(--btn-secondary-bg) !important;
+}
+
+[data-theme="green"] .hover\:bg-slate-100:hover,
+[data-theme="green"] .hover\:bg-slate-200:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-700:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-800:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-700\/60:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-700\/80:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-800\/80:hover {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="green"] .border-slate-100,
+[data-theme="green"] .border-slate-200,
+[data-theme="green"] .border-slate-100\/50,
+[data-theme="green"] .border-slate-200\/80,
+[data-theme="green"] .dark\:border-slate-800,
+[data-theme="green"] .dark\:border-slate-800\/80,
+[data-theme="green"] .dark\:border-slate-800\/60,
+[data-theme="green"] .dark\:border-slate-800\/50,
+[data-theme="green"] .dark\:border-slate-800\/40,
+[data-theme="green"] .dark\:border-slate-800\/30 {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="green"] .text-slate-800,
+[data-theme="green"] .dark\:text-slate-100,
+[data-theme="green"] .text-slate-700,
+[data-theme="green"] .dark\:text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="green"] .text-slate-400,
+[data-theme="green"] .text-slate-500,
+[data-theme="green"] .text-slate-600,
+[data-theme="green"] .dark\:text-slate-300,
+[data-theme="green"] .dark\:text-slate-400,
+[data-theme="green"] .dark\:text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="green"] .bg-slate-50\/50,
+[data-theme="green"] .dark\:bg-slate-900\/30 {
+  background-color: rgba(234, 252, 240, 0.50) !important;
+}
+
+[data-theme="green"] .hover\:bg-slate-50\/50:hover,
+[data-theme="green"] .dark\:hover\:bg-slate-900\/10:hover {
+  background-color: rgba(52, 199, 89, 0.05) !important;
+}
+
+[data-theme="green"] .bg-slate-200,
+[data-theme="green"] .dark\:bg-slate-700 {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="green"] .bg-white.shadow-sm,
+[data-theme="green"] .dark\:bg-slate-700.shadow-sm {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="green"] aside {
+  background-color: var(--bg-glass-heavy) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 冰海蓝主题 */
+[data-theme="blue"] .bg-white,
+[data-theme="blue"] .dark\:bg-\[\#1e293b\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="blue"] .bg-\[\#f1f5f9\],
+[data-theme="blue"] .dark\:bg-\[\#0f172a\] {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="blue"] .bg-slate-50,
+[data-theme="blue"] .bg-slate-100,
+[data-theme="blue"] .bg-slate-200\/80,
+[data-theme="blue"] .dark\:bg-slate-800,
+[data-theme="blue"] .dark\:bg-slate-800\/40,
+[data-theme="blue"] .dark\:bg-slate-800\/50,
+[data-theme="blue"] .dark\:bg-slate-800\/80 {
+  background-color: var(--btn-secondary-bg) !important;
+}
+
+[data-theme="blue"] .hover\:bg-slate-100:hover,
+[data-theme="blue"] .hover\:bg-slate-200:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-700:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-800:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-700\/60:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-700\/80:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-800\/80:hover {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="blue"] .border-slate-100,
+[data-theme="blue"] .border-slate-200,
+[data-theme="blue"] .border-slate-100\/50,
+[data-theme="blue"] .border-slate-200\/80,
+[data-theme="blue"] .dark\:border-slate-800,
+[data-theme="blue"] .dark\:border-slate-800\/80,
+[data-theme="blue"] .dark\:border-slate-800\/60,
+[data-theme="blue"] .dark\:border-slate-800\/50,
+[data-theme="blue"] .dark\:border-slate-800\/40,
+[data-theme="blue"] .dark\:border-slate-800\/30 {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="blue"] .text-slate-800,
+[data-theme="blue"] .dark\:text-slate-100,
+[data-theme="blue"] .text-slate-700,
+[data-theme="blue"] .dark\:text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="blue"] .text-slate-400,
+[data-theme="blue"] .text-slate-500,
+[data-theme="blue"] .text-slate-600,
+[data-theme="blue"] .dark\:text-slate-300,
+[data-theme="blue"] .dark\:text-slate-400,
+[data-theme="blue"] .dark\:text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="blue"] .bg-slate-50\/50,
+[data-theme="blue"] .dark\:bg-slate-900\/30 {
+  background-color: rgba(230, 244, 254, 0.50) !important;
+}
+
+[data-theme="blue"] .hover\:bg-slate-50\/50:hover,
+[data-theme="blue"] .dark\:hover\:bg-slate-900\/10:hover {
+  background-color: rgba(0, 122, 255, 0.05) !important;
+}
+
+[data-theme="blue"] .bg-slate-200,
+[data-theme="blue"] .dark\:bg-slate-700 {
+  background-color: var(--btn-secondary-hover-bg) !important;
+}
+
+[data-theme="blue"] .bg-white.shadow-sm,
+[data-theme="blue"] .dark\:bg-slate-700.shadow-sm {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="blue"] aside {
+  background-color: var(--bg-glass-heavy) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 3. 全局样式与交互 */
+
+/* 全局禁用文本选择，防止交互误触变蓝 */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s, color 0.2s;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 允许复制与输入的区域 */
+input,
+textarea,
+.select-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* 隐藏只读输入框闪烁的光标 */
+input[readonly],
+textarea[readonly] {
+  caret-color: transparent !important;
+  cursor: default;
+}
+
+/* 针对非输入性区域，屏蔽长按与点击高亮 */
+*:not(input):not(textarea):not(.select-text) {
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 确保交互控件不被选中 */
+button,
+a,
+svg,
+img,
+[role="button"],
+.cursor-pointer {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* 输入控件聚焦 */
+input,
+select,
+textarea {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid transparent !important;
+  outline-offset: 2px !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--focus-ring) !important;
+}
+
+/* 占位符颜色 */
+::-webkit-input-placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.45;
+}
+
+:-moz-placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.45;
+}
+
+::-moz-placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.45;
+}
+
+:-ms-input-placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.45;
+}
+
+/* 滚动条整体配置 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 默认滑块透明 */
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.25s ease-in-out;
+}
+
+/* 容器悬停时显示滑块 */
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+}
+
+/* 滑块悬停高亮 */
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover) !important;
+}
+
+/* Firefox 悬停渐显兼容 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.25s ease-in-out;
+}
+
+*:hover {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* 4. 磨砂玻璃与遮罩 */
+
+.glass-heavy,
+[data-theme] .glass-heavy {
+  background-color: var(--bg-glass-heavy) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: var(--border-glass) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.01);
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: backdrop-filter;
+}
+
+.glass-medium,
+[data-theme] .glass-medium {
+  background-color: var(--bg-glass-medium) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--border-glass) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: backdrop-filter;
+}
+
+.glass-medium.shadow-none,
+[data-theme] .glass-medium.shadow-none {
+  box-shadow: none !important;
+}
+
+.glass-light,
+[data-theme] .glass-light {
+  background-color: var(--bg-glass-light) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: var(--border-glass) !important;
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: backdrop-filter;
+  /* 继承圆角 */
+  border-radius: inherit;
+}
+
+.glass-mask {
+  background-color: var(--bg-mask) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: backdrop-filter;
+}
+
+/* 侧边栏激活 */
+.sidebar-active {
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+  box-shadow: 0 4px 12px var(--sidebar-active-shadow) !important;
+}
+
+/* 磨砂玻璃投影 */
+[data-theme="purple"] .glass-heavy {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="purple"] .glass-medium {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="pink"] .glass-heavy {
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="pink"] .glass-medium {
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.03);
+}
+
+[data-theme="green"] .glass-heavy {
+  box-shadow: 0 20px 50px rgba(5, 46, 22, 0.06);
+}
+
+[data-theme="green"] .glass-medium {
+  box-shadow: 0 8px 32px rgba(5, 46, 22, 0.03);
+}
+
+[data-theme="blue"] .glass-heavy {
+  box-shadow: 0 20px 50px rgba(8, 47, 73, 0.06);
+}
+
+[data-theme="blue"] .glass-medium {
+  box-shadow: 0 8px 32px rgba(8, 47, 73, 0.03);
+}
+
+[data-theme="light"] .glass-heavy {
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+}
+
+.dark .glass-heavy {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* 5. 文字颜色 */
+
+.glass-heavy,
+.glass-medium,
+.glass-light {
+  --text-secondary: #cbd5e1;
+}
+
+[data-theme="light"] .glass-heavy,
+[data-theme="light"] .glass-medium,
+[data-theme="light"] .glass-light {
+  --text-secondary: #334155;
+}
+
+[data-theme="pink"] .glass-heavy,
+[data-theme="pink"] .glass-medium,
+[data-theme="pink"] .glass-light {
+  --text-secondary: #be123c;
+}
+
+[data-theme="green"] .glass-heavy,
+[data-theme="green"] .glass-medium,
+[data-theme="green"] .glass-light {
+  --text-secondary: #166534;
+}
+
+[data-theme="blue"] .glass-heavy,
+[data-theme="blue"] .glass-medium,
+[data-theme="blue"] .glass-light {
+  --text-secondary: #075985;
+}
+
+[data-theme="purple"] .glass-heavy,
+[data-theme="purple"] .glass-medium,
+[data-theme="purple"] .glass-light {
+  --text-secondary: #d8b4fe;
+}
+
+/* 覆盖文本色 */
+.glass-heavy .text-slate-400,
+.glass-heavy .text-slate-500,
+.glass-heavy .text-slate-600,
+.glass-heavy .dark\:text-slate-300,
+.glass-heavy .dark\:text-slate-400,
+.glass-heavy .dark\:text-slate-500,
+.glass-medium .text-slate-400,
+.glass-medium .text-slate-500,
+.glass-medium .text-slate-600,
+.glass-medium .dark\:text-slate-300,
+.glass-medium .dark\:text-slate-400,
+.glass-medium .dark\:text-slate-500,
+.glass-light .text-slate-400,
+.glass-light .text-slate-500,
+.glass-light .text-slate-600,
+.glass-light .dark\:text-slate-300,
+.glass-light .dark\:text-slate-400,
+.glass-light .dark\:text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+/* 6. 移动端底栏 */
+
+nav.md\:hidden button:not(.text-accent) {
+  color: var(--text-secondary) !important;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+nav.md\:hidden button.text-accent {
+  color: var(--accent) !important;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease;
+}
+
+/* 7. 动画 */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 8. 适配与 Hover */
+
+/* 面板玻璃化 */
+main .bg-white,
+main .dark\:bg-\[\#1e293b\],
+main .dark\:bg-slate-800,
+[data-theme="purple"] main .bg-white,
+[data-theme="purple"] main .dark\:bg-\[\#1e293b\],
+[data-theme="pink"] main .bg-white,
+[data-theme="pink"] main .dark\:bg-\[\#1e293b\],
+[data-theme="green"] main .bg-white,
+[data-theme="green"] main .dark\:bg-\[\#1e293b\],
+[data-theme="blue"] main .bg-white,
+[data-theme="blue"] main .dark\:bg-\[\#1e293b\] {
+  background-color: var(--bg-glass-medium) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  /* 硬件加速 */
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  will-change: backdrop-filter !important;
+}
+
+/* 内部 Hover 优化 */
+.glass-heavy .hover\:bg-slate-50:hover,
+.glass-heavy .hover\:bg-slate-100:hover,
+.glass-heavy .hover\:bg-slate-200:hover,
+.glass-heavy .dark\:hover\:bg-slate-700:hover,
+.glass-heavy .dark\:hover\:bg-slate-800:hover,
+.glass-medium .hover\:bg-slate-50:hover,
+.glass-medium .hover\:bg-slate-100:hover,
+.glass-medium .hover\:bg-slate-200:hover,
+.glass-medium .dark\:hover\:bg-slate-700:hover,
+.glass-medium .dark\:hover\:bg-slate-800:hover,
+.glass-light .hover\:bg-slate-50:hover,
+.glass-light .hover\:bg-slate-100:hover,
+.glass-light .hover\:bg-slate-200:hover,
+.glass-light .dark\:hover\:bg-slate-700:hover,
+.glass-light .dark\:hover\:bg-slate-800:hover,
+/* 兼容卡片 Hover */
+.bg-white .hover\:bg-slate-50:hover,
+.bg-white .hover\:bg-slate-100:hover,
+.bg-white .hover\:bg-slate-200:hover,
+.bg-white .dark\:hover\:bg-slate-700:hover,
+.bg-white .dark\:hover\:bg-slate-800:hover,
+.dark\:bg-\[\#1e293b\] .hover\:bg-slate-50:hover,
+.dark\:bg-\[\#1e293b\] .hover\:bg-slate-100:hover,
+.dark\:bg-\[\#1e293b\] .hover\:bg-slate-200:hover,
+.dark\:bg-\[\#1e293b\] .dark\:hover\:bg-slate-700:hover,
+.dark\:bg-\[\#1e293b\] .dark\:hover\:bg-slate-800:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 亮色/粉色主题 Hover 反转 */
+[data-theme="light"] .glass-heavy .hover\:bg-slate-100:hover,
+[data-theme="light"] .glass-heavy .hover\:bg-slate-200:hover,
+[data-theme="light"] .glass-medium .hover\:bg-slate-100:hover,
+[data-theme="light"] .glass-medium .hover\:bg-slate-200:hover,
+[data-theme="light"] .bg-white .hover\:bg-slate-100:hover,
+[data-theme="light"] .bg-white .hover\:bg-slate-200:hover,
+[data-theme="pink"] .glass-heavy .hover\:bg-slate-100:hover,
+[data-theme="pink"] .glass-heavy .hover\:bg-slate-200:hover,
+[data-theme="pink"] .glass-medium .hover\:bg-slate-100:hover,
+[data-theme="pink"] .glass-medium .hover\:bg-slate-200:hover,
+[data-theme="pink"] .bg-white .hover\:bg-slate-100:hover,
+[data-theme="pink"] .bg-white .hover\:bg-slate-200:hover,
+[data-theme="green"] .glass-heavy .hover\:bg-slate-100:hover,
+[data-theme="green"] .glass-heavy .hover\:bg-slate-200:hover,
+[data-theme="green"] .glass-medium .hover\:bg-slate-100:hover,
+[data-theme="green"] .glass-medium .hover\:bg-slate-200:hover,
+[data-theme="green"] .bg-white .hover\:bg-slate-100:hover,
+[data-theme="green"] .bg-white .hover\:bg-slate-200:hover,
+[data-theme="blue"] .glass-heavy .hover\:bg-slate-100:hover,
+[data-theme="blue"] .glass-heavy .hover\:bg-slate-200:hover,
+[data-theme="blue"] .glass-medium .hover\:bg-slate-100:hover,
+[data-theme="blue"] .glass-medium .hover\:bg-slate-200:hover,
+[data-theme="blue"] .bg-white .hover\:bg-slate-100:hover,
+[data-theme="blue"] .bg-white .hover\:bg-slate-200:hover {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* 侧边栏隐藏滚动条，但仍然允许滚轮滚动 */
+aside::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+aside {
+  -ms-overflow-style: none !important;
+  /* IE and Edge */
+  scrollbar-width: none !important;
+  /* Firefox */
+}
+
+/* 侧边栏底部按钮图标微交互，采用超缓动贝塞尔曲线缓和速度变化 */
+.sidebar-bottom-icon {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease !important;
+}
+
+/* 常驻硬件加速以防 hover translate 时抗锯齿重算导致文字发虚 */
+.live-card {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
