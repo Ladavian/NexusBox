@@ -130,9 +130,11 @@ func loadSubscribeConfig() {
     if subscribeConfig.Password == "" {
         subscribeConfig.Password = "admin"
     }
-    // 如果账密被自动补全，保存到文件
+    // 如果账密被自动补全，直接写入文件（不能调 saveSubscribeConfig，因为当前已持有锁）
     if tmp.Username == "" || tmp.Password == "" {
+        subscribeMu.Unlock()
         saveSubscribeConfig()
+        subscribeMu.Lock()
     }
 }
 
