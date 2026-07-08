@@ -74,17 +74,50 @@ func (c *cancelableReadCloser) Close() error {
 }
 
 // coreRequest 向内核发送 HTTP 请求，自动添加 Authorization 头
+// 优先使用 Unix socket，失败则回退到 TCP 127.0.0.1:9090
 func coreRequest(method, path string, body io.Reader) (*http.Response, error) {
 	subscribeMu.RLock()
 	secret := subscribeConfig.PanelSecret
+	panelPort := subscribeConfig.PanelPort
 	subscribeMu.RUnlock()
 
-	// 动态超时：测速与提供商拉取为 90s，其余普通请求 10s
 	timeout := 10 * time.Second
 	if strings.Contains(path, "/healthcheck") || strings.Contains(path, "/providers/") {
 		timeout = 90 * time.Second
 	}
 
+	// 先尝试 Unix socket
+	resp, err := doCoreRequest(method, path, body, secret, timeout)
+	if err == nil {
+		return resp, nil
+	}
+
+	// Unix socket 失败，回退到 TCP
+	if panelPort > 0 {
+		ctx2, cancel2 := context.WithTimeout(context.Background(), timeout)
+		url := fmt.Sprintf("http://127.0.0.1:%d", panelPort) + path
+		req, err2 := http.NewRequestWithContext(ctx2, method, url, body)
+		if err2 != nil {
+			cancel2()
+			return nil, fmt.Errorf("Unix socket 和 TCP 均失败: %w", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		if secret != "" {
+			req.Header.Set("Authorization", "Bearer "+secret)
+		}
+		resp2, err2 := http.DefaultClient.Do(req)
+		if err2 != nil {
+			cancel2()
+			return nil, fmt.Errorf("Unix socket 和 TCP 均失败: %w", err)
+		}
+		resp2.Body = &cancelableReadCloser{ReadCloser: resp2.Body, cancel: cancel2}
+		return resp2, nil
+	}
+
+	return nil, err
+}
+
+func doCoreRequest(method, path string, body io.Reader, secret string, timeout time.Duration) (*http.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 
 	url := "http://localhost" + path
@@ -104,7 +137,6 @@ func coreRequest(method, path string, body io.Reader) (*http.Response, error) {
 		return nil, err
 	}
 
-	// 包装 Body 保证读取完毕后再释放 Context，防止流截断
 	resp.Body = &cancelableReadCloser{
 		ReadCloser: resp.Body,
 		cancel:     cancel,
