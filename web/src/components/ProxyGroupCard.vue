@@ -224,129 +224,66 @@ const getDelayText = (delay?: number) => {
 </script>
 
 <template>
-  <div ref="cardRef" class="bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-200/40 dark:border-slate-800/40 transition-all relative">
-    <!-- 头部：展开时粘性，使用当前主题的卡片背景色 var(--bg-card) 进行完美适配 -->
+  <div ref="cardRef" class="bg-white/60 dark:bg-slate-900/50 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 transition-all duration-300 hover:shadow-sm overflow-hidden">
+    <!-- 头部 -->
     <div
-      class="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 rounded-t-xl cursor-pointer select-none transition-shadow duration-200"
-      :class="[
-        expandedState[group.name]
-          ? 'sticky top-0 z-10 shadow-sm bg-[var(--bg-card)] border-b border-slate-100 dark:border-slate-800/80'
-          : 'bg-slate-50/50 dark:bg-slate-900/30'
-      ]"
+      class="px-4 pt-3.5 pb-3 cursor-pointer select-none transition-all duration-200"
+      :class="expandedState[group.name] ? 'bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800' : ''"
       @click="expandedState[group.name] = !expandedState[group.name]"
     >
-      <div class="flex flex-col gap-2">
-        <!-- 原有头部布局 -->
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <ChevronForwardOutline class="w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200" :class="{ 'rotate-90': expandedState[group.name] }" />
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ group.name }}</span>
-                <span class="px-2 py-0.5 text-[11px] font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded uppercase shrink-0">{{ group.type }}</span>
-              </div>
-              <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                {{ t('proxies.current') }}: <span class="font-bold text-accent select-all">{{ group.now }}</span>
-              </div>
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <ChevronForwardOutline class="w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-300" :class="{ 'rotate-90': expandedState[group.name] }" />
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{{ group.name }}</span>
+              <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 uppercase shrink-0 tracking-wider">{{ group.type }}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+              {{ group.now }}
             </div>
           </div>
-
-          <div class="flex items-center gap-1.5">
-            <!-- 质量评分按钮（仅质量排序时可见） -->
-            <button
-              v-if="sortOrder === 'quality'"
-              @click.stop="proxyStore.fetchQualityScores()"
-              class="p-1.5 text-slate-400 hover:text-accent rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shrink-0"
-              :title="t('proxies.quality_score')"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
-            </button>
-            <button @click.stop="handleTestGroup" :disabled="isTesting" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shrink-0" :title="t('proxies.test')">
-              <SyncOutline class="w-4 h-4" :class="{ 'animate-spin': isTesting }" />
-            </button>
-          </div>
         </div>
-
-        <!-- Health Indicator -->
-        <div class="group-health flex items-center flex-wrap w-full mt-1" :class="shouldUseBar ? 'h-1.5 overflow-hidden gap-0' : 'h-2 gap-1'">
-          <template v-if="shouldUseBar">
-            <span
-              v-for="(seg, sIdx) in getGroupBarSegments"
-              :key="sIdx"
-              :style="{ flex: seg.pct }"
-              :class="[seg.class, 'h-full', sIdx === 0 ? 'rounded-l-sm' : '', sIdx === getGroupBarSegments.length - 1 ? 'rounded-r-sm' : '']"
-            ></span>
-          </template>
-          <template v-else>
-            <span
-              v-for="(dot, dIdx) in getGroupDotSegments"
-              :key="dIdx"
-              :class="[dot.colorClass, 'w-2 h-2 rounded-full flex-shrink-0 relative']"
-              :title="dot.name"
-            >
-              <span v-if="dot.isSelected" class="absolute top-[2px] left-[2px] w-1 h-1 rounded-full bg-white"></span>
-            </span>
-          </template>
-        </div>
+        <button @click.stop="handleTestGroup" :disabled="isTesting" class="p-1.5 text-slate-300 hover:text-accent rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shrink-0" :title="t('proxies.test')">
+          <SyncOutline class="w-4 h-4" :class="{ 'animate-spin': isTesting }" />
+        </button>
+      </div>
+      <!-- 健康度条 -->
+      <div class="group-health flex items-center w-full mt-2" :class="shouldUseBar ? 'h-1 gap-0' : 'h-1.5 gap-0.5'">
+        <template v-if="shouldUseBar">
+          <span v-for="(seg, sIdx) in getGroupBarSegments" :key="sIdx" :style="{ flex: seg.pct }" :class="[seg.class, 'h-full first:rounded-l last:rounded-r transition-all duration-500']"></span>
+        </template>
+        <template v-else>
+          <span v-for="(dot, dIdx) in getGroupDotSegments" :key="dIdx" :class="[dot.colorClass, 'w-1.5 h-1.5 rounded-full shrink-0 relative transition-colors duration-300']" :title="dot.name">
+            <span v-if="dot.isSelected" class="absolute inset-0.5 rounded-full bg-white/80"></span>
+          </span>
+        </template>
       </div>
     </div>
 
-    <!-- 主体（节点网格）：展开时显示 -->
-    <div v-if="expandedState[group.name]" ref="gridRef" class="grid grid-cols-2 gap-2.5 px-4 sm:px-5 pb-4 sm:pb-5 pt-4 border-t border-slate-100 dark:border-slate-800/80">
+    <!-- 节点网格 -->
+    <div v-if="expandedState[group.name]" ref="gridRef" class="grid grid-cols-2 gap-2 p-3 bg-slate-50/40 dark:bg-slate-950/30 animate-[fadeIn_0.2s_ease-out]">
       <div
         v-for="name in sortedNodes"
         :key="name"
         @click="handleSelectProxy(name)"
-        class="live-card flex flex-col justify-between p-2.5 text-xs rounded-xl border transition-all duration-300 cursor-pointer min-h-[75px] relative"
+        class="group flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
         :class="group.now === name
-          ? 'bg-accent/10 dark:bg-accent/15 border-accent text-accent shadow-sm ring-1 ring-accent/30 hover:-translate-y-[2px] hover:shadow-md'
-          : 'border-slate-200/60 dark:border-slate-800 hover:-translate-y-[2px] hover:shadow-md hover:border-slate-300/80 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50'"
+          ? 'bg-accent/10 dark:bg-accent/20 border-accent/40 shadow-sm'
+          : 'bg-white/80 dark:bg-slate-900/50 border-slate-200/40 dark:border-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'"
       >
-        <div class="w-full text-left">
-          <span class="block truncate text-xs font-bold text-slate-800 dark:text-slate-100 leading-snug" :class="{ '!text-accent': group.now === name }" :title="name">
-            {{ name }}
-          </span>
-        </div>
-        <div v-if="allProxiesRaw[name]" class="flex justify-between items-center gap-1.5 mt-2.5 w-full select-none">
-          <div class="flex items-center gap-1 min-w-0">
-            <span class="bg-slate-200/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-1 py-0.5 rounded font-mono uppercase text-[9px] font-bold leading-none truncate">
-              {{ allProxiesRaw[name].type || 'DIRECT' }}
-            </span>
-            <span v-if="allProxiesRaw[name].xudp" class="bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 px-1 py-0.5 rounded font-mono font-extrabold text-[9px] leading-none shrink-0" title="XUDP">X</span>
-            <span v-else-if="allProxiesRaw[name].udp" class="bg-blue-500/10 text-blue-500 dark:text-blue-400 px-1 py-0.5 rounded font-mono font-extrabold text-[9px] leading-none shrink-0" title="UDP">U</span>
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <!-- 质量分数：与测速按钮相同样式 -->
-            <span v-if="sortOrder === 'quality' && qualityScores[name] !== undefined" 
-                  class="text-[10px] font-mono shrink-0 select-none px-1.5 py-0.5 rounded-md leading-none text-center bg-accent/10 text-accent border border-accent/20">
-              {{ qualityScores[name] }}
-            </span>
-            <span
-              class="text-[10px] font-mono shrink-0 select-none px-1.5 py-0.5 rounded-md leading-none text-center min-w-[32px] transition-all hover:scale-105 active:scale-95 border cursor-pointer"
-              :class="getDelayClass(delays[name])"
-              @click.stop="handleTestSingle(name)"
-            >
-              {{ getDelayText(delays[name]) }}
-            </span>
+        <div class="min-w-0 flex-1 mr-2">
+          <span class="block truncate text-xs font-semibold text-slate-700 dark:text-slate-200" :class="{ 'text-accent': group.now === name }" :title="name">{{ name }}</span>
+          <div v-if="allProxiesRaw[name]" class="flex items-center gap-1 mt-1">
+            <span class="text-[9px] font-mono text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/50 px-1 rounded">{{ allProxiesRaw[name].type }}</span>
           </div>
         </div>
-        <div v-if="allProxiesRaw[name]" class="flex gap-[2px] w-full mt-2 h-1 overflow-hidden">
-          <template v-if="allProxiesRaw[name].recentColors && allProxiesRaw[name].recentColors.length > 0">
-            <span
-              v-for="(hist, hIdx) in allProxiesRaw[name].recentColors"
-              :key="hIdx"
-              :class="[hist.colorClass, 'flex-1 h-full rounded-sm']"
-              :title="hist.title"
-            ></span>
-          </template>
-          <template v-else>
-            <span class="flex-1 h-full bg-slate-200/60 dark:bg-slate-800/40 rounded-sm"></span>
-          </template>
-        </div>
+        <span
+          class="text-[10px] font-mono font-bold shrink-0 px-2 py-1 rounded-lg leading-none text-center min-w-[40px] transition-all cursor-pointer border"
+          :class="getDelayClass(delays[name])"
+          @click.stop="handleTestSingle(name)"
+          :title="t('proxies.test')"
+        >{{ getDelayText(delays[name]) }}</span>
       </div>
     </div>
   </div>
