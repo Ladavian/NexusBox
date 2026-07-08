@@ -651,24 +651,45 @@ const lineCount = computed(() => {
 
 // YAML 语法高亮
 const highlightedYaml = computed(() => {
-  let text = yamlContent.value || ''
-  text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const text = yamlContent.value || ''
   const lines = text.split('\n')
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   return lines.map(line => {
-    if (/^\s*#/.test(line)) return `<span class="hl-cmt">${line}</span>`
-    line = line.replace(/^(\s*)([\w\-\.]+)(\s*:\s*)(.*)$/, (_, indent, key, colon, value) => {
-      let vh = value
-      if (value && /^['"].*['"]$/.test(value.trim())) vh = `<span class="hl-str">${value}</span>`
-      else if (value && /^(true|false|yes|no|on|off)$/i.test(value.trim())) vh = `<span class="hl-bool">${value}</span>`
-      else if (value && /^\d+\.?\d*$/.test(value.trim())) vh = `<span class="hl-num">${value}</span>`
-      else if (value) vh = `<span class="hl-val">${value}</span>`
-      return `${indent}<span class="hl-key">${key}</span><span class="hl-col">${colon}</span>${vh}`
-    })
-    line = line.replace(/^(\s*)(-)(\s+)(.*)$/, (_, indent, dash, spaces, rest) => `${indent}<span class="hl-col">${dash}</span>${spaces}<span class="hl-val">${rest}</span>`)
-    line = line.replace(/(\s)(#\s*.*)$/, (_, sp, cmt) => `${sp}<span class="hl-cmt">${cmt}</span>`)
-    return line
+    // 全行注释
+    if (/^\s*#/.test(line)) return `<span class="hl-cmt">${esc(line)}</span>`
+    // 键值对: key: value
+    const kv = line.match(/^(\s*)([\w\-\.]+)(\s*:\s*)(.*)$/)
+    if (kv) {
+      const [, indent, key, colon, value] = kv
+      let vh = esc(value)
+      if (/^['"].*['"]$/.test(value.trim())) vh = `<span class="hl-str">${esc(value)}</span>`
+      else if (/^(true|false|yes|no|on|off)$/i.test(value.trim())) vh = `<span class="hl-bool">${esc(value)}</span>`
+      else if (/^\d+\.?\d*$/.test(value.trim())) vh = `<span class="hl-num">${esc(value)}</span>`
+      else if (value.trim()) vh = `<span class="hl-val">${esc(value)}</span>`
+      return `${indent}<span class="hl-key">${esc(key)}</span><span class="hl-col">${colon}</span>${vh}`
+    }
+    // 列表项: - value
+    const li = line.match(/^(\s*)(-)(\s+)(.*)$/)
+    if (li) {
+      const [, indent, dash, spaces, rest] = li
+      return `${indent}<span class="hl-col">${dash}</span>${spaces}<span class="hl-val">${esc(rest)}</span>`
+    }
+    // 行尾注释
+    const tail = esc(line).replace(/(\s)(#\s*.*)$/, (_, sp, cmt) => `${sp}<span class="hl-cmt">${cmt}</span>`)
+    return tail
   }).join('\n')
 })
+
+// 滚动同步
+const editorScroller = ref<HTMLElement | null>(null)
+const editorHighlight = ref<HTMLElement | null>(null)
+const editorTextarea = ref<HTMLTextAreaElement | null>(null)
+const onEditorScroll = () => {
+  if (editorHighlight.value && editorTextarea.value) {
+    editorHighlight.value.scrollTop = editorTextarea.value.scrollTop
+    editorHighlight.value.scrollLeft = editorTextarea.value.scrollLeft
+  }
+}
 
 // 加载原始 YAML 配置
 const loadYamlConfig = async () => {
@@ -1222,45 +1243,46 @@ onActivated(() => {
         </div>
 
         <!-- 7. YAML 配置文件编辑器 -->
-        <div
-          class="live-card bg-slate-50/50 dark:bg-slate-900/30 p-6 rounded-xl border border-slate-200/40 dark:border-slate-800/40 hover:border-slate-300/80 dark:hover:border-slate-700/80 hover:-translate-y-[3px] hover:shadow-md hover:bg-slate-100/80 dark:hover:bg-slate-900/80 duration-300 space-y-4 h-full transition-all flex flex-col col-span-full">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="live-card bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-200/40 dark:border-slate-800/40 hover:border-slate-300/80 dark:hover:border-slate-700/80 duration-300 transition-all col-span-full flex flex-col">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
             <h4 class="font-bold text-sm flex items-center gap-2">
               <CodeSlashOutline class="w-4 h-4 text-accent" />
               {{ t('config.yaml_editor_title') }}
             </h4>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
               <button @click="loadYamlConfig" :disabled="yamlLoading"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent/10 text-accent border border-accent/20 hover:bg-accent hover:text-white transition-all flex items-center gap-1 disabled:opacity-50">
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent/10 text-accent border border-accent/20 hover:bg-accent hover:text-white transition-all disabled:opacity-50 flex items-center gap-1">
                 <SyncOutline v-if="yamlLoading" class="w-3 h-3 animate-spin" />
-                {{ yamlLoading ? t('config.yaml_loading') : t('config.yaml_load') }}
+                {{ yamlLoading ? '...' : t('config.yaml_load') }}
               </button>
               <button @click="saveYamlConfig" :disabled="yamlSaving || !yamlLoaded"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent-hover text-white shadow-sm transition-all flex items-center gap-1 disabled:opacity-50">
-                {{ yamlSaving ? t('config.yaml_saving') : t('config.yaml_save') }}
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent-hover text-white shadow-sm transition-all disabled:opacity-50 flex items-center gap-1">
+                {{ yamlSaving ? '...' : t('config.yaml_save') }}
               </button>
             </div>
           </div>
 
-          <div class="flex-1 flex flex-col min-h-0">
-            <div class="flex-1 flex rounded-xl overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e]">
-              <!-- 行号栏 -->
-              <div class="hidden sm:flex flex-col items-end select-none bg-[#1e1e1e] border-r border-[#2d2d2d] py-3 shrink-0 overflow-hidden" style="min-width:52px">
-                <div v-for="n in lineCount" :key="n" class="text-[11px] leading-[1.65] font-mono text-[#858585] px-3">{{ n }}</div>
-              </div>
-              <!-- 编辑区（高亮 pre + 透明 textarea） -->
-              <div class="flex-1 relative overflow-auto">
-                <pre class="yaml-highlight p-3 m-0 font-mono text-xs leading-[1.65] bg-[#1e1e1e] whitespace-pre-wrap break-all absolute inset-0 pointer-events-none" v-html="highlightedYaml"></pre>
-                <textarea v-model="yamlContent" :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')" spellcheck="false"
-                  class="yaml-editor p-3 font-mono text-xs leading-[1.65] bg-transparent text-transparent placeholder-[#5a5a5a] outline-none resize-none border-none absolute inset-0 w-full h-full caret-[#d4d4d4]"
-                  style="tab-size:2"></textarea>
-              </div>
+          <!-- 编辑器主体：行号 + textarea -->
+          <div class="flex-1 flex min-h-[360px] sm:min-h-[500px] bg-[#1e1e1e] rounded-b-xl overflow-hidden">
+            <!-- 行号 -->
+            <div class="hidden sm:block bg-[#1e1e1e] border-r border-[#2d2d2d] py-3 select-none shrink-0 overflow-hidden" style="width:48px">
+              <div v-for="n in lineCount" :key="n" class="text-right text-[11px] leading-[1.625] font-mono text-[#858585] pr-3" style="min-width:48px">{{ n }}</div>
             </div>
-            <!-- 底部状态栏 -->
-            <div class="flex items-center justify-between px-3 py-1.5 bg-[#007acc] text-white text-[10px] font-mono rounded-b-xl">
-              <span>YAML · {{ lineCount }} Lines · {{ yamlContent.length }} Chars</span>
-              <span v-if="yamlLoaded">Ctrl+S {{ t('common.save') }}</span>
-            </div>
+            <!-- 编辑区 -->
+            <!-- 编辑区（高亮 pre + 透明 textarea，滚动同步） -->
+            <textarea
+              v-model="yamlContent"
+              :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')"
+              spellcheck="false"
+              class="flex-1 p-3 font-mono text-xs sm:text-sm bg-[#1e1e1e] text-[#d4d4d4] placeholder-[#5a5a5a] outline-none resize-none border-none leading-[1.625] selection:bg-[#264f78]"
+              style="tab-size:2; -webkit-overflow-scrolling:touch"
+            ></textarea>
+          </div>
+
+          <!-- 状态栏 -->
+          <div class="flex items-center justify-between px-3 py-1.5 bg-[#007acc] text-white text-[10px] font-mono rounded-b-xl">
+            <span>{{ lineCount }} lines · {{ yamlContent.length }} chars</span>
+            <span class="hidden sm:inline" v-if="yamlLoaded">{{ t('config.yaml_edit_hint') }}</span>
           </div>
         </div>
       </div>
