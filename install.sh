@@ -93,48 +93,61 @@ install_geo() {
 # ---------- 安装 NexusBox ----------
 install_nexusbox() {
  ARCH=$(arch)
+ INSTALL_BIN="$INSTALL_DIR/nexusbox"
 
- # 尝试从 GitHub Releases 下载
- VER=$(curl -fsSL "$F_API" 2>/dev/null | grep '"tag_name"' | head -1 | cut -d'"' -f4 || echo "")
+ # 尝试1：通过 GitHub API 获取最新版
+ msg "获取最新版本信息..."
+ VER=$(curl -fsSL --connect-timeout 15 "$F_API" 2>/dev/null | grep '"tag_name"' | head -1 | cut -d'"' -f4 || echo "")
+ 
  if [ -n "$VER" ]; then
   BIN_NAME="nexusbox-${ARCH}"
   URL="https://github.com/Ladavian/NexusBox/releases/download/${VER}/${BIN_NAME}"
-  msg "尝试下载 NexusBox ${VER} (${ARCH})..."
-  if curl -fSL --connect-timeout 30 --retry 3 "$URL" -o "$INSTALL_DIR/nexusbox" 2>/dev/null; then
-   chmod +x "$INSTALL_DIR/nexusbox"
-   msg "NexusBox 下载完成: $INSTALL_DIR/nexusbox"
+  msg "下载 NexusBox ${VER} (${ARCH})..."
+  if curl -fSL --connect-timeout 60 --retry 3 "$URL" -o "$INSTALL_BIN"; then
+   chmod +x "$INSTALL_BIN"
+   msg "下载完成: $INSTALL_BIN"
    return
   fi
-  warn "预编译包下载失败，尝试从源码编译..."
+  warn "GitHub Release 下载失败，尝试镜像加速..."
  fi
+
+ # 尝试2：ghproxy 镜像加速
+ for MIRROR in "https://gh-proxy.com/" "https://gh-proxy.org/" "https://mirror.ghproxy.com/"; do
+  if [ -z "$VER" ]; then
+   VER=$(curl -fsSL --connect-timeout 15 "${MIRROR}${F_API}" 2>/dev/null | grep '"tag_name"' | head -1 | cut -d'"' -f4 || echo "")
+  fi
+  if [ -n "$VER" ]; then
+   BIN_NAME="nexusbox-${ARCH}"
+   URL="${MIRROR}https://github.com/Ladavian/NexusBox/releases/download/${VER}/${BIN_NAME}"
+   msg "通过镜像下载 ${VER}..."
+   if curl -fSL --connect-timeout 60 --retry 2 "$URL" -o "$INSTALL_BIN"; then
+    chmod +x "$INSTALL_BIN"
+    msg "下载完成: $INSTALL_BIN"
+    return
+   fi
+  fi
+ done
 
  # 回退：从源码编译
+ warn "预编译包下载失败，尝试从源码编译..."
  if command -v go &>/dev/null; then
-  msg "从源码编译 NexusBox..."
-  GO_VER=$(go version | grep -oP 'go\K[0-9]+\.[0-9]+' || echo "0.0")
-  if [ "$(echo "$GO_VER >= 1.21" | bc -l 2>/dev/null || echo 0)" = "1" ] || [ "${GO_VER%%.*}" -ge 1 -a "${GO_VER##*.}" -ge 21 ] 2>/dev/null; then
-   BUILD_DIR="/tmp/nexusbox-build"
-   rm -rf "$BUILD_DIR"
-   git clone --depth 1 https://github.com/Ladavian/NexusBox.git "$BUILD_DIR" 2>/dev/null || {
-    warn "克隆仓库失败"
-    return 1
-   }
-   cd "$BUILD_DIR/web" && npm install --silent 2>/dev/null && npm run build 2>/dev/null || warn "前端构建跳过"
-   cd "$BUILD_DIR" && go build -tags vue -o "$INSTALL_DIR/nexusbox" . 2>/dev/null || {
-    go build -o "$INSTALL_DIR/nexusbox" . 2>/dev/null || {
-     warn "Go 编译失败"
-     rm -rf "$BUILD_DIR"
-     return 1
-    }
-   }
-   chmod +x "$INSTALL_DIR/nexusbox"
-   rm -rf "$BUILD_DIR"
-   msg "NexusBox 编译完成: $INSTALL_DIR/nexusbox"
-   return
-  fi
+  msg "编译 NexusBox (需要 Go + Node.js)..."
+  BUILD_DIR="/tmp/nexusbox-build"
+  rm -rf "$BUILD_DIR"
+  git clone --depth 1 https://github.com/Ladavian/NexusBox.git "$BUILD_DIR" || {
+   err "克隆仓库失败，请检查网络"
+  }
+  cd "$BUILD_DIR/web" && npm install --silent 2>/dev/null && npm run build 2>/dev/null || warn "前端构建失败，将编译纯后端版本"
+  cd "$BUILD_DIR" && go build -tags vue -o "$INSTALL_BIN" . 2>/dev/null || go build -o "$INSTALL_BIN" . || {
+   err "Go 编译失败，请手动安装"
+  }
+  chmod +x "$INSTALL_BIN"
+  rm -rf "$BUILD_DIR"
+  msg "编译完成: $INSTALL_BIN"
+  return
  fi
 
- err "无法安装 NexusBox: 未找到预编译包且 Go 不可用"
+ err "无法安装: 下载和编译均失败。请检查网络或手动安装"
 }
 
 # ---------- GEO 数据自动更新定时器 ----------
