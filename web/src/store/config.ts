@@ -109,10 +109,11 @@ export const useConfigStore = defineStore('config', () => {
           'tproxy-port': data['tproxy-port'] || 0,
           'mixed-port': data['mixed-port'] || 0
         }
-        configsLoading.value = false
       }
     } catch (e) {
       console.warn('获取内核详细配置失败，可能内核未运行', e)
+    } finally {
+      configsLoading.value = false
     }
   }
 

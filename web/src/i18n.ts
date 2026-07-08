@@ -462,6 +462,8 @@ const messages = {
     'config.auth_save_success': '账户信息已保存',
     'config.dns_failover': 'DNS 故障切换',
     'config.dns_failover_desc': 'Mihomo 宕机自动切公共 DNS，恢复后切回',
+    'config.dns_failover_servers': '自定义 DNS 地址（每行一个）',
+    'config.dns_failover_servers_placeholder': '223.5.5.5\n119.29.29.29',
   },
   en: {
     'common.loading': 'Loading...',
@@ -922,6 +924,8 @@ const messages = {
     'config.auth_save_success': 'Account info saved',
     'config.dns_failover': 'DNS Failover',
     'config.dns_failover_desc': 'Auto-switch to public DNS when Mihomo is down',
+    'config.dns_failover_servers': 'Custom DNS servers (one per line)',
+    'config.dns_failover_servers_placeholder': '223.5.5.5\n119.29.29.29',
   }
 }
 
