@@ -918,8 +918,26 @@ const dnsBackupPath = "/etc/resolv.conf.nexusbox.bak"
 // mihomo DNS 配置（指向 mihomo 的 DNS 监听）
 const mihomoDnsConf = "nameserver 127.0.0.1\n"
 
-// 公共 DNS（mihomo 不运行时使用）
-const publicDnsConf = "nameserver 223.5.5.5\nnameserver 119.29.29.29\n"
+// 默认公共 DNS
+const defaultPublicDns = "223.5.5.5\n119.29.29.29"
+
+// getPublicDnsConf 获取用户自定义或默认的公共 DNS 配置
+func getPublicDnsConf() string {
+	subscribeMu.RLock()
+	servers := subscribeConfig.DnsFailoverServers
+	subscribeMu.RUnlock()
+	if strings.TrimSpace(servers) == "" {
+		servers = defaultPublicDns
+	}
+	var buf strings.Builder
+	for _, s := range strings.Split(servers, "\n") {
+		s = strings.TrimSpace(s)
+		if s != "" {
+			buf.WriteString("nameserver " + s + "\n")
+		}
+	}
+	return buf.String()
+}
 
 // startDnsFailover 启动 DNS 故障切换监控
 func startDnsFailover() {
@@ -988,7 +1006,7 @@ func switchToPublicDNS() {
 	// 备份当前 resolv.conf
 	data, _ := os.ReadFile(dnsResolvConf)
 	os.WriteFile(dnsBackupPath, data, 0644)
-	os.WriteFile(dnsResolvConf, []byte(publicDnsConf), 0644)
+	os.WriteFile(dnsResolvConf, []byte(getPublicDnsConf()), 0644)
 }
 
 // switchToMihomoDNS 切换回 Mihomo DNS
@@ -1009,12 +1027,20 @@ func handleDnsFailover(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		subscribeMu.RLock()
 		enabled := subscribeConfig.DnsFailover
+		servers := subscribeConfig.DnsFailoverServers
 		subscribeMu.RUnlock()
-		respondJSON(w, http.StatusOK, map[string]bool{"enabled": enabled})
+		if strings.TrimSpace(servers) == "" {
+			servers = defaultPublicDns
+		}
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"enabled": enabled,
+			"servers": servers,
+		})
 
 	case http.MethodPost:
 		var req struct {
-			Enabled bool `json:"enabled"`
+			Enabled bool   `json:"enabled"`
+			Servers string `json:"servers"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "无效的请求格式")
@@ -1023,6 +1049,9 @@ func handleDnsFailover(w http.ResponseWriter, r *http.Request) {
 
 		subscribeMu.Lock()
 		subscribeConfig.DnsFailover = req.Enabled
+		if req.Servers != "" {
+			subscribeConfig.DnsFailoverServers = req.Servers
+		}
 		subscribeMu.Unlock()
 		saveSubscribeConfig()
 

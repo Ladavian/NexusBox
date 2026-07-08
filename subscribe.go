@@ -27,6 +27,7 @@ type SubscribeConfig struct {
 	Username       string         `json:"username"`
 	Password       string         `json:"password"`
 	DnsFailover    bool           `json:"dns_failover"`
+	DnsFailoverServers string     `json:"dns_failover_servers"` // 换行分隔的 DNS 地址
 	RuleGroup      string         `json:"rule_group"`
 	UIPanel        string         `json:"ui_panel"`
 	MetaBackendURL string         `json:"meta_backend_url"`

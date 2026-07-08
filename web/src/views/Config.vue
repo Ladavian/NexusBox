@@ -593,6 +593,8 @@ const saveAuthConfig = async () => {
 
 // DNS 故障切换
 const dnsFailover = ref(false)
+const dnsFailoverServers = ref('')
+const dnsServersSaving = ref(false)
 
 const loadDnsFailover = async () => {
   try {
@@ -600,6 +602,7 @@ const loadDnsFailover = async () => {
     if (resp.ok) {
       const data = await resp.json()
       dnsFailover.value = data.enabled
+      dnsFailoverServers.value = data.servers || ''
     }
   } catch (_) {}
 }
@@ -609,10 +612,26 @@ const toggleDnsFailover = async (enabled: boolean) => {
     await apiFetch('/config/dns-failover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled })
+      body: JSON.stringify({ enabled, servers: dnsFailoverServers.value })
     })
   } catch (e) {
     globalStore.showToast(t('common.error'), 'error')
+  }
+}
+
+const saveDnsFailoverServers = async () => {
+  dnsServersSaving.value = true
+  try {
+    await apiFetch('/config/dns-failover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: dnsFailover.value, servers: dnsFailoverServers.value })
+    })
+    globalStore.showToast(t('common.success'), 'success')
+  } catch (e) {
+    globalStore.showToast(t('common.error'), 'error')
+  } finally {
+    dnsServersSaving.value = false
   }
 }
 
@@ -902,14 +921,6 @@ onActivated(() => {
             <FormSwitch v-model="configStore.tproxyEnabled" @update:model-value="toggleTProxy" />
           </div>
 
-          <!-- DNS 故障切换 -->
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/40">
-            <div class="flex flex-col gap-0.5">
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ t('config.dns_failover') }}</label>
-              <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('config.dns_failover_desc') }}</span>
-            </div>
-            <FormSwitch v-model="dnsFailover" @update:model-value="toggleDnsFailover" />
-          </div>
         </div>
 
         <!-- 4. 运维控制（始终显示） -->
@@ -1126,6 +1137,27 @@ onActivated(() => {
             <pre
               class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto whitespace-pre-wrap break-all h-28 border border-slate-200 dark:border-slate-800 transition-all flex-1"
               :class="dnsQuery.result ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500 italic flex items-center justify-center select-none'">{{ dnsQuery.result || t('config.dns_result_default') }}</pre>
+          </div>
+
+          <!-- DNS 故障切换 -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-700/40 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-0.5">
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ t('config.dns_failover') }}</label>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('config.dns_failover_desc') }}</span>
+              </div>
+              <FormSwitch v-model="dnsFailover" @update:model-value="toggleDnsFailover" />
+            </div>
+            <div v-if="dnsFailover" class="flex flex-col gap-1.5">
+              <label class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{{ t('config.dns_failover_servers') }}</label>
+              <textarea v-model="dnsFailoverServers" rows="3" :placeholder="t('config.dns_failover_servers_placeholder')"
+                class="w-full p-2 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none resize-none"
+              ></textarea>
+              <button @click="saveDnsFailoverServers" :disabled="dnsServersSaving"
+                class="self-end px-3 py-1 text-xs font-semibold rounded-lg bg-accent hover:bg-accent-hover text-white transition-all disabled:opacity-50">
+                {{ dnsServersSaving ? t('common.loading') : t('common.save') }}
+              </button>
+            </div>
           </div>
         </div>
 
