@@ -38,7 +38,8 @@ export interface CoreStatus {
 const dnsQuery = ref({
   name: '',
   type: 'A',
-  result: '',
+  result: '' as string,
+  answers: [] as {name: string, type: string, ttl: number, data: string}[],
   loading: false
 })
 
@@ -475,15 +476,22 @@ const handleDNSQuery = async (e?: Event) => {
 
   dnsQuery.value.loading = true
   dnsQuery.value.result = ''
+  dnsQuery.value.answers = []
   try {
     const query = `name=${encodeURIComponent(dnsQuery.value.name)}&type=${dnsQuery.value.type}`
     const resp = await apiFetch(`/dns/query?${query}`)
     if (resp.ok) {
       const data = await resp.json()
       if (data.Status === 0 && data.Answer && data.Answer.length > 0) {
-        dnsQuery.value.result = data.Answer.map((a: any) => a.data).join('\n')
+        const typeNames: Record<number, string> = {1: 'A', 28: 'AAAA', 5: 'CNAME', 15: 'MX', 16: 'TXT', 2: 'NS', 6: 'SOA'}
+        dnsQuery.value.answers = data.Answer.map((a: any) => ({
+          name: a.name || '',
+          type: typeNames[a.type] || 'TYPE'+a.type,
+          ttl: a.TTL || 0,
+          data: String(a.data || '')
+        }))
       } else {
-        dnsQuery.value.result = JSON.stringify(data, null, 2)
+        dnsQuery.value.result = t('config.dns_no_record')
       }
     } else {
       dnsQuery.value.result = t('config.dns_query_failed')
@@ -1134,9 +1142,34 @@ onActivated(() => {
               </div>
             </div>
 
-            <pre
-              class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto whitespace-pre-wrap break-all h-28 border border-slate-200 dark:border-slate-800 transition-all flex-1"
-              :class="dnsQuery.result ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500 italic flex items-center justify-center select-none'">{{ dnsQuery.result || t('config.dns_result_default') }}</pre>
+            <!-- 查询结果表格 -->
+            <div v-if="dnsQuery.answers.length > 0" class="flex-1 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
+              <table class="w-full text-xs">
+                <thead class="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                  <tr class="text-slate-500 dark:text-slate-400 font-semibold">
+                    <th class="px-3 py-2 text-left w-16">{{ t('config.dns_type') }}</th>
+                    <th class="px-3 py-2 text-left">{{ t('config.dns_record') }}</th>
+                    <th class="px-3 py-2 text-right w-16">TTL</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="(a, i) in dnsQuery.answers" :key="i" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td class="px-3 py-2">
+                      <span class="px-1.5 py-0.5 rounded font-bold text-[10px] bg-accent/10 text-accent">{{ a.type }}</span>
+                    </td>
+                    <td class="px-3 py-2 font-mono text-emerald-700 dark:text-emerald-400 break-all">{{ a.data }}</td>
+                    <td class="px-3 py-2 text-right text-slate-400">{{ a.ttl > 0 ? a.ttl+'s' : '-' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else-if="dnsQuery.result" class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto h-28 border border-slate-200 dark:border-slate-800 flex-1 flex items-center justify-center select-none"
+              :class="dnsQuery.result.includes('失败') ? 'text-red-500' : 'text-slate-400 dark:text-slate-500 italic'">
+              {{ dnsQuery.result }}
+            </div>
+            <div v-else class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto h-28 border border-slate-200 dark:border-slate-800 flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500 italic select-none">
+              {{ t('config.dns_result_default') }}
+            </div>
           </div>
 
           <!-- DNS 故障切换 -->
