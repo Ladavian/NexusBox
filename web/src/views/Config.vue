@@ -740,14 +740,14 @@ onActivated(() => {
       <!-- 文档 + 关于 按钮组（紧挨） -->
         <div class="flex items-center gap-1">
           <a href="https://github.com/Ladavian/NexusBox" target="_blank" rel="noopener noreferrer"
-            class="flex items-center justify-center text-xs font-semibold rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 transition-all text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-800/30 px-3 py-1.5 gap-1.5 group"
+            class="flex items-center justify-center text-xs font-semibold rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 transition-all text-[#858585] dark:text-slate-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-800/30 px-3 py-1.5 gap-1.5 group"
             :title="t('nav.docs')">
             <DocumentTextOutline class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
             <span>{{ t('nav.docs') }}</span>
           </a>
     
           <button @click="globalStore.showAbout = true"
-            class="flex items-center justify-center text-xs font-semibold rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 transition-all text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-800/30 px-3 py-1.5 gap-1.5 group"
+            class="flex items-center justify-center text-xs font-semibold rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 transition-all text-[#858585] dark:text-slate-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-800/30 px-3 py-1.5 gap-1.5 group"
             :title="t('about.title')">
             <InformationCircleOutline class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-12" />
             <span>{{ t('about.title') }}</span>
@@ -758,7 +758,7 @@ onActivated(() => {
     <!-- 核心状态加载中的优雅 Loading 占位 -->
     <div v-if="coreStatus.loading" class="flex-1 flex flex-col items-center justify-center gap-3 select-none">
       <div class="w-7 h-7 border-2 border-slate-200 dark:border-slate-800 !border-t-accent rounded-full animate-spin"></div>
-      <span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider">正在加载系统参数...</span>
+      <span class="text-xs font-bold text-slate-400 dark:text-[#cccccc] tracking-wider">正在加载系统参数...</span>
     </div>
 
     <!-- 加载完成后的内滚动内容区 (已升级为统一大内容卡片) -->
@@ -776,7 +776,7 @@ onActivated(() => {
           <div v-if="configsLoading"
             class="absolute inset-0 glass-light z-30 flex flex-col items-center justify-center rounded-2xl gap-2 select-none border shadow-sm transition-all duration-300">
             <div class="w-5 h-5 border-2 border-slate-200 dark:border-slate-700 !border-t-accent rounded-full animate-spin"></div>
-            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
+            <span class="text-xs font-bold text-[#cccccc] dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
           </div>
 
           <h4 class="font-bold text-sm border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
@@ -824,7 +824,7 @@ onActivated(() => {
           <div v-if="configsLoading"
             class="absolute inset-0 glass-light z-30 flex flex-col items-center justify-center rounded-2xl gap-2 select-none border shadow-sm transition-all duration-300">
             <div class="w-5 h-5 border-2 border-slate-200 dark:border-slate-700 !border-t-accent rounded-full animate-spin"></div>
-            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
+            <span class="text-xs font-bold text-[#cccccc] dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
           </div>
 
           <h4 class="font-bold text-sm border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
@@ -834,27 +834,27 @@ onActivated(() => {
 
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.mixed_port') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.mixed_port') }}</label>
               <input type="number" v-model.number="configs['mixed-port']" min="0" max="65535" step="1" @blur="savePorts" @keyup.enter="savePorts" :placeholder="t('config.port_disabled_hint')"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.http_port') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.http_port') }}</label>
               <input type="number" v-model.number="configs.port" min="0" max="65535" step="1" @blur="savePorts" @keyup.enter="savePorts" :placeholder="t('config.port_disabled_hint')"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.socks_port') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.socks_port') }}</label>
               <input type="number" v-model.number="configs['socks-port']" min="0" max="65535" step="1" @blur="savePorts" @keyup.enter="savePorts" :placeholder="t('config.port_disabled_hint')"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.redir_port') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.redir_port') }}</label>
               <input type="number" v-model.number="configs['redir-port']" min="0" max="65535" step="1" @blur="savePorts" @keyup.enter="savePorts" :placeholder="t('config.port_disabled_hint')"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full" />
             </div>
             <div class="flex flex-col gap-1 col-span-2">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.tproxy_port') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.tproxy_port') }}</label>
               <input type="number" v-model.number="configs['tproxy-port']" 
                 min="0" max="65535" step="1"
                 @blur="savePorts" @keyup.enter="savePorts" 
@@ -874,7 +874,7 @@ onActivated(() => {
           <div v-if="configsLoading"
             class="absolute inset-0 glass-light z-30 flex flex-col items-center justify-center rounded-2xl gap-2 select-none border shadow-sm transition-all duration-300">
             <div class="w-5 h-5 border-2 border-slate-200 dark:border-slate-700 !border-t-accent rounded-full animate-spin"></div>
-            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
+            <span class="text-xs font-bold text-[#cccccc] dark:text-slate-400 tracking-wider">{{ t('config.syncing_configs') }}</span>
           </div>
 
           <h4 class="font-bold text-sm border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
@@ -889,7 +889,7 @@ onActivated(() => {
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.tun_stack') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.tun_stack') }}</label>
               <select v-model="configs.tun.stack" @change="saveTun"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full">
                 <option value="gVisor">gVisor</option>
@@ -898,14 +898,14 @@ onActivated(() => {
               </select>
             </div>
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.tun_device') }}</label>
+              <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.tun_device') }}</label>
               <input type="text" v-model="configs.tun.device" @blur="saveTun" @keyup.enter="saveTun" :placeholder="t('config.interface_name_placeholder')"
                 class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full" />
             </div>
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ t('config.interface_name') }}</label>
+            <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">{{ t('config.interface_name') }}</label>
             <select v-model="configs['interface-name']" @change="saveInterface"
               class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none w-full">
               <option value="">{{ t('config.interface_name_auto') }}</option>
@@ -950,7 +950,7 @@ onActivated(() => {
           <div class="space-y-4 flex-1 flex flex-col justify-between">
             <!-- 内核状态 -->
             <div class="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ t('config.core_status') }}</span>
+              <span class="text-xs font-semibold text-[#cccccc] dark:text-slate-400">{{ t('config.core_status') }}</span>
               <div class="flex items-center gap-2.5 text-xs">
                 <span class="w-2 h-2 rounded-full flex shrink-0"
                   :class="coreStatus.loading ? 'bg-slate-400 animate-pulse' : (coreStatus.running ? 'bg-success' : 'bg-red-500')"></span>
@@ -958,7 +958,7 @@ onActivated(() => {
                   {{ coreStatus.loading ? t('config.core_checking') : (coreStatus.running ? t('config.core_running') : t('config.core_stopped')) }}
                 </span>
                 <span v-if="coreStatus.running && stats.coreVersion !== '未知' && stats.coreVersion !== '加载中...'"
-                  class="px-1.5 py-0.5 font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded">
+                  class="px-1.5 py-0.5 font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-[#cccccc] dark:text-slate-400 rounded">
                   {{ coreVersion }}
                 </span>
               </div>
@@ -1072,7 +1072,7 @@ onActivated(() => {
                   <input :type="showAuthPassword ? 'text' : 'password'" v-model="authPassword" :placeholder="t('login.password')"
                     class="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none" />
                   <button @click="showAuthPassword = !showAuthPassword" type="button"
-                    class="px-2 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+                    class="px-2 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-[#cccccc] dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
                     {{ showAuthPassword ? t('common.hide') : t('common.show') }}
                   </button>
                 </div>
@@ -1152,7 +1152,7 @@ onActivated(() => {
             <div v-if="dnsQuery.answers.length > 0" class="flex-1 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl">
               <table class="w-full text-xs">
                 <thead class="bg-slate-100 dark:bg-slate-800 sticky top-0">
-                  <tr class="text-slate-500 dark:text-slate-400 font-semibold">
+                  <tr class="text-[#cccccc] dark:text-slate-400 font-semibold">
                     <th class="px-3 py-2 text-left w-16">{{ t('config.dns_type') }}</th>
                     <th class="px-3 py-2 text-left">{{ t('config.dns_record') }}</th>
                     <th class="px-3 py-2 text-right w-16">TTL</th>
@@ -1170,10 +1170,10 @@ onActivated(() => {
               </table>
             </div>
             <div v-else-if="dnsQuery.result" class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto h-28 border border-slate-200 dark:border-slate-800 flex-1 flex items-center justify-center select-none"
-              :class="dnsQuery.result.includes('失败') ? 'text-red-500' : 'text-slate-400 dark:text-slate-500 italic'">
+              :class="dnsQuery.result.includes('失败') ? 'text-red-500' : 'text-slate-400 dark:text-[#cccccc] italic'">
               {{ dnsQuery.result }}
             </div>
-            <div v-else class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto h-28 border border-slate-200 dark:border-slate-800 flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500 italic select-none">
+            <div v-else class="p-4 bg-slate-50 dark:bg-slate-900/50 font-mono text-xs rounded-xl overflow-y-auto h-28 border border-slate-200 dark:border-slate-800 flex-1 flex items-center justify-center text-slate-400 dark:text-[#cccccc] italic select-none">
               {{ t('config.dns_result_default') }}
             </div>
           </div>
@@ -1183,12 +1183,12 @@ onActivated(() => {
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-0.5">
                 <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ t('config.dns_failover') }}</label>
-                <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('config.dns_failover_desc') }}</span>
+                <span class="text-[10px] text-slate-400 dark:text-[#cccccc]">{{ t('config.dns_failover_desc') }}</span>
               </div>
               <FormSwitch v-model="dnsFailover" @update:model-value="toggleDnsFailover" />
             </div>
             <div v-if="dnsFailover" class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{{ t('config.dns_failover_servers') }}</label>
+              <label class="text-[10px] font-semibold text-[#cccccc] dark:text-slate-400">{{ t('config.dns_failover_servers') }}</label>
               <textarea v-model="dnsFailoverServers" rows="3" :placeholder="t('config.dns_failover_servers_placeholder')"
                 class="w-full p-2 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-accent outline-none resize-none"
               ></textarea>
@@ -1223,10 +1223,10 @@ onActivated(() => {
 
           <div class="flex-1 flex flex-col min-h-0">
             <!-- 编辑器主体 -->
-            <div class="flex-1 flex rounded-xl overflow-hidden border border-slate-700 dark:border-slate-600 bg-[#0d1117]">
+            <div class="flex-1 flex rounded-xl overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e]">
               <!-- 行号栏 -->
-              <div class="hidden sm:flex flex-col items-end select-none bg-[#161b22] border-r border-slate-700/50 py-3 shrink-0 overflow-hidden" style="min-width:48px">
-                <div v-for="n in lineCount" :key="n" class="text-[11px] leading-[1.65] font-mono text-slate-600 px-3">
+              <div class="hidden sm:flex flex-col items-end select-none bg-[#1e1e1e] border-r border-[#2d2d2d] py-3 shrink-0 overflow-hidden" style="min-width:52px">
+                <div v-for="n in lineCount" :key="n" class="text-[11px] leading-[1.65] font-mono text-[#858585] px-3">
                   {{ n }}
                 </div>
               </div>
@@ -1235,12 +1235,12 @@ onActivated(() => {
                 v-model="yamlContent"
                 :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')"
                 spellcheck="false"
-                class="flex-1 p-3 font-mono text-xs !leading-[1.65] bg-[#0d1117] text-[#c9d1d9] placeholder-slate-600 outline-none resize-none border-none"
+                class="flex-1 p-3 font-mono text-xs !leading-[1.65] bg-[#1e1e1e] text-[#d4d4d4] placeholder-[#5a5a5a] outline-none resize-none border-none selection:bg-[#264f78]"
                 style="tab-size:2"
               ></textarea>
             </div>
             <!-- 底部状态栏 -->
-            <div class="flex items-center justify-between px-3 py-1.5 bg-[#161b22] border border-t-0 border-slate-700 dark:border-slate-600 rounded-b-xl text-[10px] font-mono text-slate-500">
+            <div class="flex items-center justify-between px-3 py-1.5 bg-[#1e1e1e] border border-t-0 border-[#3c3c3c] rounded-b-xl text-[10px] font-mono text-[#cccccc]">
               <span>{{ t('config.yaml_lines') }}: {{ lineCount }} | {{ yamlContent.length }} chars</span>
               <span v-if="yamlLoaded">{{ t('config.yaml_edit_hint') }}</span>
             </div>
@@ -1259,10 +1259,10 @@ onActivated(() => {
         <div class="space-y-4">
           <!-- 目的例外 -->
           <div>
-            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">
               {{ t('config.tproxy_dst_exceptions_label') }}
             </label>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ t('config.tproxy_dst_exceptions_hint') }}</p>
+            <p class="text-[11px] text-slate-400 dark:text-[#cccccc] mt-0.5">{{ t('config.tproxy_dst_exceptions_hint') }}</p>
             <textarea
               v-model="tproxyDstExceptionsText"
               rows="6"
@@ -1273,10 +1273,10 @@ onActivated(() => {
 
           <!-- 源例外 -->
           <div class="pt-2 border-t border-slate-100 dark:border-slate-800/60">
-            <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <label class="text-xs font-semibold text-[#858585] dark:text-slate-400">
               {{ t('config.tproxy_src_exceptions_label') }}
             </label>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{{ t('config.tproxy_src_exceptions_hint') }}</p>
+            <p class="text-[11px] text-slate-400 dark:text-[#cccccc] mt-0.5">{{ t('config.tproxy_src_exceptions_hint') }}</p>
             <textarea
               v-model="tproxySrcExceptionsText"
               rows="6"
@@ -1298,7 +1298,7 @@ onActivated(() => {
         </div>
 
         <div class="flex justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-          <button @click="showTproxyExceptionsDialog = false" class="px-4 py-2 text-sm font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700/60 text-slate-600 dark:text-slate-300 transition-all">
+          <button @click="showTproxyExceptionsDialog = false" class="px-4 py-2 text-sm font-semibold rounded-xl bg-white border border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700/60 text-[#858585] dark:text-slate-300 transition-all">
             {{ t('common.cancel') }}
           </button>
           <button @click="saveTproxyExceptions" class="px-4 py-2 text-sm font-semibold rounded-xl bg-accent hover:bg-accent-hover text-white transition-all shadow-md shadow-accent/15">
