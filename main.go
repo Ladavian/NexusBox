@@ -156,6 +156,11 @@ func main() {
 	loadTproxyDstExceptions()
 	loadTproxyProxyLocal()
 
+	// DNS 故障切换（如果已启用）
+	if subscribeConfig.DnsFailover {
+		startDnsFailover()
+	}
+
 	if _, err := os.Stat(configTarget); os.IsNotExist(err) {
 		if err := generateConfig(subscribeConfig); err != nil {
 			fmt.Printf("生成基本配置文件失败: %v\n", err)
@@ -315,6 +320,7 @@ func main() {
 	mux.HandleFunc(baseURL+"/config/tproxy", authMiddleware(handleTproxyState))
 	mux.HandleFunc(baseURL+"/config/tproxy/exceptions", authMiddleware(handleTproxyExceptions))
 	mux.HandleFunc(baseURL+"/config/tproxy/proxy-local", authMiddleware(handleTproxyProxyLocal))
+	mux.HandleFunc(baseURL+"/config/dns-failover", authMiddleware(handleDnsFailover))
 
 	mux.HandleFunc(baseURL+"/ipinfo/local/v4", authMiddleware(handleLocalIPv4))
 	mux.HandleFunc(baseURL+"/ipinfo/local/v6", authMiddleware(handleLocalIPv6))

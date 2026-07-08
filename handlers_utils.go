@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
-	"strings"
-	"time"
 	"strconv"
+	"strings"
 	"sync"
-	"math"
-	"log"
+	"time"
 )
 
 var geoCache = struct {
@@ -900,4 +901,140 @@ func testDelayForProxy(name, testURL string, timeoutMs int) {
 	}
 	defer resp.Body.Close()
 	// 不需要读取响应体
+}
+
+// ===== DNS 故障切换 =====
+
+var (
+	dnsFailoverStop    chan struct{}
+	dnsFailoverRunning bool
+	dnsFailoverMu      sync.Mutex
+	lastCoreWasRunning bool
+)
+
+const dnsResolvConf = "/etc/resolv.conf"
+const dnsBackupPath = "/etc/resolv.conf.nexusbox.bak"
+
+// mihomo DNS 配置（指向 mihomo 的 DNS 监听）
+const mihomoDnsConf = "nameserver 127.0.0.1\n"
+
+// 公共 DNS（mihomo 不运行时使用）
+const publicDnsConf = "nameserver 223.5.5.5\nnameserver 119.29.29.29\n"
+
+// startDnsFailover 启动 DNS 故障切换监控
+func startDnsFailover() {
+	dnsFailoverMu.Lock()
+	if dnsFailoverRunning {
+		dnsFailoverMu.Unlock()
+		return
+	}
+	dnsFailoverRunning = true
+	dnsFailoverMu.Unlock()
+
+	dnsFailoverStop = make(chan struct{})
+	ticker := time.NewTicker(3 * time.Second)
+
+	go func() {
+		// 记录当前状态
+		lastCoreWasRunning = isCoreRunning()
+		for {
+			select {
+			case <-ticker.C:
+				subscribeMu.RLock()
+				enabled := subscribeConfig.DnsFailover
+				subscribeMu.RUnlock()
+				if !enabled {
+					continue
+				}
+
+				running := isCoreRunning()
+				if running != lastCoreWasRunning {
+					if !running {
+						// mihomo 宕机 → 切公共 DNS
+						switchToPublicDNS()
+						log.Printf("[DNS] Mihomo 已停止，切换至公共 DNS")
+					} else {
+						// mihomo 恢复 → 切 mihomo DNS
+						switchToMihomoDNS()
+						log.Printf("[DNS] Mihomo 已恢复，切换回 Mihomo DNS")
+					}
+					lastCoreWasRunning = running
+				}
+			case <-dnsFailoverStop:
+				ticker.Stop()
+				// 退出时恢复 mihomo DNS
+				if isCoreRunning() {
+					switchToMihomoDNS()
+				}
+				return
+			}
+		}
+	}()
+}
+
+// stopDnsFailover 停止 DNS 故障切换
+func stopDnsFailover() {
+	dnsFailoverMu.Lock()
+	defer dnsFailoverMu.Unlock()
+	if !dnsFailoverRunning {
+		return
+	}
+	dnsFailoverRunning = false
+	close(dnsFailoverStop)
+}
+
+// switchToPublicDNS 切换到公共 DNS
+func switchToPublicDNS() {
+	// 备份当前 resolv.conf
+	data, _ := os.ReadFile(dnsResolvConf)
+	os.WriteFile(dnsBackupPath, data, 0644)
+	os.WriteFile(dnsResolvConf, []byte(publicDnsConf), 0644)
+}
+
+// switchToMihomoDNS 切换回 Mihomo DNS
+func switchToMihomoDNS() {
+	// 如果有备份，恢复备份；否则直接写 mihomo DNS
+	if _, err := os.Stat(dnsBackupPath); err == nil {
+		data, _ := os.ReadFile(dnsBackupPath)
+		os.WriteFile(dnsResolvConf, data, 0644)
+		os.Remove(dnsBackupPath)
+	} else {
+		os.WriteFile(dnsResolvConf, []byte(mihomoDnsConf), 0644)
+	}
+}
+
+// handleDnsFailover 获取或设置 DNS 故障切换开关
+func handleDnsFailover(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		subscribeMu.RLock()
+		enabled := subscribeConfig.DnsFailover
+		subscribeMu.RUnlock()
+		respondJSON(w, http.StatusOK, map[string]bool{"enabled": enabled})
+
+	case http.MethodPost:
+		var req struct {
+			Enabled bool `json:"enabled"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "无效的请求格式")
+			return
+		}
+
+		subscribeMu.Lock()
+		subscribeConfig.DnsFailover = req.Enabled
+		subscribeMu.Unlock()
+		saveSubscribeConfig()
+
+		if req.Enabled {
+			startDnsFailover()
+		} else {
+			stopDnsFailover()
+		}
+
+		respondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	default:
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	}
 }

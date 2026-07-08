@@ -460,6 +460,8 @@ const messages = {
     // 认证配置
     'config.auth_settings': '账户设置',
     'config.auth_save_success': '账户信息已保存',
+    'config.dns_failover': 'DNS 故障切换',
+    'config.dns_failover_desc': 'Mihomo 宕机自动切公共 DNS，恢复后切回',
   },
   en: {
     'common.loading': 'Loading...',
@@ -918,6 +920,8 @@ const messages = {
     // Auth config
     'config.auth_settings': 'Account Settings',
     'config.auth_save_success': 'Account info saved',
+    'config.dns_failover': 'DNS Failover',
+    'config.dns_failover_desc': 'Auto-switch to public DNS when Mihomo is down',
   }
 }
 

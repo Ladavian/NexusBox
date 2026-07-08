@@ -591,6 +591,31 @@ const saveAuthConfig = async () => {
   }
 }
 
+// DNS 故障切换
+const dnsFailover = ref(false)
+
+const loadDnsFailover = async () => {
+  try {
+    const resp = await apiFetch('/config/dns-failover')
+    if (resp.ok) {
+      const data = await resp.json()
+      dnsFailover.value = data.enabled
+    }
+  } catch (_) {}
+}
+
+const toggleDnsFailover = async (enabled: boolean) => {
+  try {
+    await apiFetch('/config/dns-failover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled })
+    })
+  } catch (e) {
+    globalStore.showToast(t('common.error'), 'error')
+  }
+}
+
 // 加载原始 YAML 配置
 const loadYamlConfig = async () => {
   yamlLoading.value = true
@@ -648,6 +673,7 @@ onMounted(async () => {
   fetchConfigs()
   fetchInterfaces()
   loadAuthConfig()
+  loadDnsFailover()
   loadYamlConfig()  // 自动加载 YAML 编辑器内容
   
   // 等待 TProxy 状态加载完成，并设置超时保护
@@ -874,6 +900,15 @@ onActivated(() => {
             </div>
             <div v-if="tproxyLoading" class="w-7 h-4 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
             <FormSwitch v-model="configStore.tproxyEnabled" @update:model-value="toggleTProxy" />
+          </div>
+
+          <!-- DNS 故障切换 -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/40">
+            <div class="flex flex-col gap-0.5">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ t('config.dns_failover') }}</label>
+              <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ t('config.dns_failover_desc') }}</span>
+            </div>
+            <FormSwitch v-model="dnsFailover" @update:model-value="toggleDnsFailover" />
           </div>
         </div>
 
