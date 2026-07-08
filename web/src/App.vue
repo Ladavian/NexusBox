@@ -266,7 +266,7 @@ onUnmounted(() => {
           <!-- 应用 Logo 图标 -->
           <div class="w-8 h-8 flex items-center justify-center shrink-0 transition-transform duration-500 text-accent"
                :class="globalStore.isSidebarCollapsed ? 'rotate-180' : 'rotate-0'">
-            <PaperPlaneOutline class="w-5.5 h-5.5" />
+            <img src="/icon.svg" class="w-8 h-8" alt="NexusBox" />
           </div>
           <!-- 标题，随折叠平滑收缩 -->
           <span class="font-bold text-sm text-slate-700 dark:text-slate-200 tracking-wider transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden"
@@ -562,7 +562,7 @@ onUnmounted(() => {
             <!-- 开源仓库 -->
             <div class="flex items-center justify-between text-xs border-t border-slate-100 dark:border-slate-800/40 pt-3">
               <span class="font-bold text-slate-500 dark:text-slate-400">{{ t('about.github') }}</span>
-              <a href="https://github.com/shuangji66/nexusbox" target="_blank" class="flex items-center gap-1 text-slate-700 dark:text-slate-200 hover:text-accent dark:hover:text-accent font-bold transition-colors">
+              <a href="https://github.com/Ladavian/NexusBox" target="_blank" class="flex items-center gap-1 text-slate-700 dark:text-slate-200 hover:text-accent dark:hover:text-accent font-bold transition-colors">
                 <LogoGithub class="w-3.5 h-3.5" />
                 <span>Github</span>
               </a>
