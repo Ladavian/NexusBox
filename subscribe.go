@@ -122,6 +122,18 @@ func loadSubscribeConfig() {
 
     subscribeConfig = tmp
     log.Printf("成功加载订阅配置：%d 个订阅", len(subscribeConfig.Subscriptions))
+    
+    // 确保默认账密存在
+    if subscribeConfig.Username == "" {
+        subscribeConfig.Username = "admin"
+    }
+    if subscribeConfig.Password == "" {
+        subscribeConfig.Password = "admin"
+    }
+    // 如果账密被自动补全，保存到文件
+    if tmp.Username == "" || tmp.Password == "" {
+        saveSubscribeConfig()
+    }
 }
 
 // saveSubscribeConfig 保存订阅配置到文件

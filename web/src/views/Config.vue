@@ -679,7 +679,7 @@ onActivated(() => {
 
       <!-- 文档 + 关于 按钮组（紧挨） -->
         <div class="flex items-center gap-1">
-          <a href="https://ttq.fjb.dpdns.org" target="_blank" rel="noopener noreferrer"
+          <a href="https://github.com/Ladavian/NexusBox" target="_blank" rel="noopener noreferrer"
             class="flex items-center justify-center text-xs font-semibold rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 transition-all text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-slate-800/30 px-3 py-1.5 gap-1.5 group"
             :title="t('nav.docs')">
             <DocumentTextOutline class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
