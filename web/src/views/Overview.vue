@@ -36,7 +36,7 @@ const currentNodeDisplay = computed(() => {
   return stats.value.currentNode
 })
 
-const base = window.BASE_URL || ''
+const base = (window.BASE_URL || '').replace(/\/+$/, '')
 
 // 流量数据点 (最多65个)
 const maxPoints = 65
