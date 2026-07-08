@@ -1026,3 +1026,12 @@ aside {
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
 }
+/* YAML 语法高亮 */
+.yaml-highlight .hl-key  { color: #569cd6; } /* 键 - 蓝色 */
+.yaml-highlight .hl-val  { color: #ce9178; } /* 值 - 橙色 */
+.yaml-highlight .hl-str  { color: #ce9178; } /* 字符串 */
+.yaml-highlight .hl-num  { color: #b5cea8; } /* 数字 */
+.yaml-highlight .hl-bool { color: #569cd6; } /* 布尔 */
+.yaml-highlight .hl-col  { color: #d4d4d4; } /* 冒号/连字符 */
+.yaml-highlight .hl-cmt  { color: #6a9955; } /* 注释 - 绿色 */
+.yaml-highlight .hl-punct { color: #d4d4d4; } /* 标点 */

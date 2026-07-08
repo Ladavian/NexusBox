@@ -649,6 +649,27 @@ const lineCount = computed(() => {
   return yamlContent.value.split('\n').length
 })
 
+// YAML 语法高亮
+const highlightedYaml = computed(() => {
+  let text = yamlContent.value || ''
+  text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const lines = text.split('\n')
+  return lines.map(line => {
+    if (/^\s*#/.test(line)) return `<span class="hl-cmt">${line}</span>`
+    line = line.replace(/^(\s*)([\w\-\.]+)(\s*:\s*)(.*)$/, (_, indent, key, colon, value) => {
+      let vh = value
+      if (value && /^['"].*['"]$/.test(value.trim())) vh = `<span class="hl-str">${value}</span>`
+      else if (value && /^(true|false|yes|no|on|off)$/i.test(value.trim())) vh = `<span class="hl-bool">${value}</span>`
+      else if (value && /^\d+\.?\d*$/.test(value.trim())) vh = `<span class="hl-num">${value}</span>`
+      else if (value) vh = `<span class="hl-val">${value}</span>`
+      return `${indent}<span class="hl-key">${key}</span><span class="hl-col">${colon}</span>${vh}`
+    })
+    line = line.replace(/^(\s*)(-)(\s+)(.*)$/, (_, indent, dash, spaces, rest) => `${indent}<span class="hl-col">${dash}</span>${spaces}<span class="hl-val">${rest}</span>`)
+    line = line.replace(/(\s)(#\s*.*)$/, (_, sp, cmt) => `${sp}<span class="hl-cmt">${cmt}</span>`)
+    return line
+  }).join('\n')
+})
+
 // 加载原始 YAML 配置
 const loadYamlConfig = async () => {
   yamlLoading.value = true
@@ -1222,27 +1243,23 @@ onActivated(() => {
           </div>
 
           <div class="flex-1 flex flex-col min-h-0">
-            <!-- 编辑器主体 -->
             <div class="flex-1 flex rounded-xl overflow-hidden border border-[#3c3c3c] bg-[#1e1e1e]">
               <!-- 行号栏 -->
               <div class="hidden sm:flex flex-col items-end select-none bg-[#1e1e1e] border-r border-[#2d2d2d] py-3 shrink-0 overflow-hidden" style="min-width:52px">
-                <div v-for="n in lineCount" :key="n" class="text-[11px] leading-[1.65] font-mono text-[#858585] px-3">
-                  {{ n }}
-                </div>
+                <div v-for="n in lineCount" :key="n" class="text-[11px] leading-[1.65] font-mono text-[#858585] px-3">{{ n }}</div>
               </div>
-              <!-- 编辑区 -->
-              <textarea
-                v-model="yamlContent"
-                :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')"
-                spellcheck="false"
-                class="flex-1 p-3 font-mono text-xs !leading-[1.65] bg-[#1e1e1e] text-[#d4d4d4] placeholder-[#5a5a5a] outline-none resize-none border-none selection:bg-[#264f78]"
-                style="tab-size:2"
-              ></textarea>
+              <!-- 编辑区（高亮 pre + 透明 textarea） -->
+              <div class="flex-1 relative overflow-auto">
+                <pre class="yaml-highlight p-3 m-0 font-mono text-xs leading-[1.65] bg-[#1e1e1e] whitespace-pre-wrap break-all absolute inset-0 pointer-events-none" v-html="highlightedYaml"></pre>
+                <textarea v-model="yamlContent" :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')" spellcheck="false"
+                  class="yaml-editor p-3 font-mono text-xs leading-[1.65] bg-transparent text-transparent placeholder-[#5a5a5a] outline-none resize-none border-none absolute inset-0 w-full h-full caret-[#d4d4d4]"
+                  style="tab-size:2"></textarea>
+              </div>
             </div>
             <!-- 底部状态栏 -->
-            <div class="flex items-center justify-between px-3 py-1.5 bg-[#1e1e1e] border border-t-0 border-[#3c3c3c] rounded-b-xl text-[10px] font-mono text-[#cccccc]">
-              <span>{{ t('config.yaml_lines') }}: {{ lineCount }} | {{ yamlContent.length }} chars</span>
-              <span v-if="yamlLoaded">{{ t('config.yaml_edit_hint') }}</span>
+            <div class="flex items-center justify-between px-3 py-1.5 bg-[#007acc] text-white text-[10px] font-mono rounded-b-xl">
+              <span>YAML · {{ lineCount }} Lines · {{ yamlContent.length }} Chars</span>
+              <span v-if="yamlLoaded">Ctrl+S {{ t('common.save') }}</span>
             </div>
           </div>
         </div>
