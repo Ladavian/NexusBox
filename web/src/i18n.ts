@@ -381,6 +381,7 @@ const messages = {
     'config.yaml_save_warning': '配置已写入但热重载失败',
     'config.yaml_save_failed': '配置文件保存失败',
     'config.yaml_load_failed': '加载配置文件失败',
+    'config.yaml_lines': '行数',
     'config.yaml_empty_warning': '配置内容不能为空',
 
     'subscription.title': '订阅中心',
@@ -845,6 +846,7 @@ const messages = {
     'config.yaml_save_warning': 'Config written but hot-reload failed',
     'config.yaml_save_failed': 'Failed to save config file',
     'config.yaml_load_failed': 'Failed to load config file',
+    'config.yaml_lines': 'Lines',
     'config.yaml_empty_warning': 'Config content cannot be empty',
 
     'subscription.title': 'Subscription Center',
