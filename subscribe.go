@@ -316,13 +316,7 @@ func handleGenerateConfig(w http.ResponseWriter, r *http.Request) {
     }
 
     // ---------- 融合模式（原有逻辑） ----------
-    // 删除旧配置
-    if _, err := os.Stat(configTarget); err == nil {
-        if err := os.Remove(configTarget); err != nil {
-            writeJSONError(w, http.StatusInternalServerError, "删除旧配置文件失败: "+err.Error())
-            return
-        }
-    }
+    // 不再删除旧配置文件，改为精准字段同步
 
     subscribeMu.Lock()
     subscribeConfig = cfg
@@ -331,12 +325,13 @@ func handleGenerateConfig(w http.ResponseWriter, r *http.Request) {
         writeJSONError(w, http.StatusInternalServerError, "保存配置失败: "+err.Error())
         return
     }
-	// 重置定时器
+    // 重置定时器
     stopAllTimers()
     startAllTimers()
 
-    if err := generateConfig(cfg); err != nil {
-        writeJSONError(w, http.StatusInternalServerError, "生成配置文件失败: "+err.Error())
+    // 使用 syncConfigFields 精准更新字段，不覆盖手动编辑的内容
+    if err := syncConfigFields(cfg); err != nil {
+        writeJSONError(w, http.StatusInternalServerError, "更新配置文件失败: "+err.Error())
         return
     }
 

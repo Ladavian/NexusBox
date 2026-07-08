@@ -101,6 +101,12 @@ func handleConfigsAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer resp.Body.Close()
+
+		// 后台同步到 config.yaml
+		if fields != nil {
+			go syncConfigFileFields(fields)
+		}
+
 		w.WriteHeader(resp.StatusCode)
 		io.Copy(w, resp.Body)
 

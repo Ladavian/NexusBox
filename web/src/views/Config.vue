@@ -648,6 +648,7 @@ onMounted(async () => {
   fetchConfigs()
   fetchInterfaces()
   loadAuthConfig()
+  loadYamlConfig()  // 自动加载 YAML 编辑器内容
   
   // 等待 TProxy 状态加载完成，并设置超时保护
   await Promise.race([
