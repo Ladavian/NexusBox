@@ -322,6 +322,17 @@ func handleGenerateConfig(w http.ResponseWriter, r *http.Request) {
     // ---------- 融合模式（原有逻辑） ----------
     // 不再删除旧配置文件，改为精准字段同步
 
+    // 保留原有账密（前端请求不包含这些字段）
+    if cfg.Username == "" {
+        cfg.Username = subscribeConfig.Username
+    }
+    if cfg.Password == "" {
+        cfg.Password = subscribeConfig.Password
+    }
+    if cfg.DnsFailoverServers == "" {
+        cfg.DnsFailoverServers = subscribeConfig.DnsFailoverServers
+    }
+
     subscribeMu.Lock()
     subscribeConfig = cfg
     subscribeMu.Unlock()
