@@ -67,7 +67,7 @@ export default defineConfig({
       ]
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/shuangji66/fluxor' }
+      { icon: 'github', link: 'https://github.com/Ladavian/NexusBox' }
     ]
   }
 })

@@ -147,7 +147,7 @@ func getLatestVersion() (string, error) {
 	}
 	cacheMutex.RUnlock()
 
-	url := "https://api.github.com/repos/shuangji66/nexusbox/releases/latest"
+	url := "https://api.github.com/repos/Ladavian/NexusBox/releases/latest"
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -214,7 +214,7 @@ func getLatestReleaseInfo() (*githubRelease, error) {
 	}
 	releaseCacheMutex.RUnlock()
 
-	apiURL := "https://api.github.com/repos/shuangji66/nexusbox/releases/latest"
+	apiURL := "https://api.github.com/repos/Ladavian/NexusBox/releases/latest"
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		return nil, err
