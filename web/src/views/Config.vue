@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia'
 import { useConfigStore, type ConfigData } from '../store/config'
 import { useOverviewStore } from '../store/overview'
 import FormSwitch from '../components/FormSwitch.vue'
+import YamlEditor from '../components/YamlEditor.vue'
 
 const { t, locale } = useI18n()
 const globalStore = useGlobalStore()
@@ -649,48 +650,6 @@ const lineCount = computed(() => {
   return yamlContent.value.split('\n').length
 })
 
-// YAML 语法高亮
-const highlightedYaml = computed(() => {
-  const text = yamlContent.value || ''
-  const lines = text.split('\n')
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  return lines.map(line => {
-    // 全行注释
-    if (/^\s*#/.test(line)) return `<span class="hl-cmt">${esc(line)}</span>`
-    // 键值对: key: value
-    const kv = line.match(/^(\s*)([\w\-\.]+)(\s*:\s*)(.*)$/)
-    if (kv) {
-      const [, indent, key, colon, value] = kv
-      let vh = esc(value)
-      if (/^['"].*['"]$/.test(value.trim())) vh = `<span class="hl-str">${esc(value)}</span>`
-      else if (/^(true|false|yes|no|on|off)$/i.test(value.trim())) vh = `<span class="hl-bool">${esc(value)}</span>`
-      else if (/^\d+\.?\d*$/.test(value.trim())) vh = `<span class="hl-num">${esc(value)}</span>`
-      else if (value.trim()) vh = `<span class="hl-val">${esc(value)}</span>`
-      return `${indent}<span class="hl-key">${esc(key)}</span><span class="hl-col">${colon}</span>${vh}`
-    }
-    // 列表项: - value
-    const li = line.match(/^(\s*)(-)(\s+)(.*)$/)
-    if (li) {
-      const [, indent, dash, spaces, rest] = li
-      return `${indent}<span class="hl-col">${dash}</span>${spaces}<span class="hl-val">${esc(rest)}</span>`
-    }
-    // 行尾注释
-    const tail = esc(line).replace(/(\s)(#\s*.*)$/, (_, sp, cmt) => `${sp}<span class="hl-cmt">${cmt}</span>`)
-    return tail
-  }).join('\n')
-})
-
-// 滚动同步
-const editorScroller = ref<HTMLElement | null>(null)
-const editorHighlight = ref<HTMLElement | null>(null)
-const editorTextarea = ref<HTMLTextAreaElement | null>(null)
-const onEditorScroll = () => {
-  if (editorHighlight.value && editorTextarea.value) {
-    editorHighlight.value.scrollTop = editorTextarea.value.scrollTop
-    editorHighlight.value.scrollLeft = editorTextarea.value.scrollLeft
-  }
-}
-
 // 加载原始 YAML 配置
 const loadYamlConfig = async () => {
   yamlLoading.value = true
@@ -1262,27 +1221,18 @@ onActivated(() => {
             </div>
           </div>
 
-          <!-- 编辑器主体：行号 + textarea -->
-          <div class="flex-1 flex min-h-[360px] sm:min-h-[500px] bg-[#1e1e1e] rounded-b-xl overflow-hidden">
-            <!-- 行号 -->
-            <div class="hidden sm:block bg-[#1e1e1e] border-r border-[#2d2d2d] py-3 select-none shrink-0 overflow-hidden" style="width:48px">
-              <div v-for="n in lineCount" :key="n" class="text-right text-[11px] leading-[1.625] font-mono text-[#858585] pr-3" style="min-width:48px">{{ n }}</div>
-            </div>
-            <!-- 编辑区 -->
-            <!-- 编辑区（高亮 pre + 透明 textarea，滚动同步） -->
-            <textarea
+          <!-- 编辑器主体：CodeMirror 6 -->
+          <div class="flex-1 min-h-[360px] sm:min-h-[500px] bg-[#1e1e1e] rounded-b-xl overflow-hidden">
+            <YamlEditor
               v-model="yamlContent"
               :placeholder="yamlLoaded ? '' : t('config.yaml_placeholder')"
-              spellcheck="false"
-              class="flex-1 p-3 font-mono text-xs sm:text-sm bg-[#1e1e1e] text-[#d4d4d4] placeholder-[#5a5a5a] outline-none resize-none border-none leading-[1.625] selection:bg-[#264f78]"
-              style="tab-size:2; -webkit-overflow-scrolling:touch"
-            ></textarea>
+            />
           </div>
 
           <!-- 状态栏 -->
           <div class="flex items-center justify-between px-3 py-1.5 bg-[#007acc] text-white text-[10px] font-mono rounded-b-xl">
             <span>{{ lineCount }} lines · {{ yamlContent.length }} chars</span>
-            <span class="hidden sm:inline" v-if="yamlLoaded">{{ t('config.yaml_edit_hint') }}</span>
+            <span class="hidden sm:inline">{{ t('config.yaml_edit_hint') }}</span>
           </div>
         </div>
       </div>

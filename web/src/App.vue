@@ -122,13 +122,18 @@ const isAllowedElement = (target: HTMLElement | null): boolean => {
 // 拦截全局选择事件以防光标与选区
 const handleSelectStart = (e: Event) => {
   const target = e.target as HTMLElement
-  if (!isAllowedElement(target)) {
+  // 同时检查 event.target 和当前聚焦元素，确保 textarea/input 内选择不被拦截
+  if (!isAllowedElement(target) && !isAllowedElement(document.activeElement as HTMLElement)) {
     e.preventDefault()
   }
 }
 
 // 拦截全局复制事件以防非授权复制
 const handleCopy = (e: ClipboardEvent) => {
+  const activeEl = document.activeElement as HTMLElement
+  // 如果当前聚焦在 input/textarea 上，直接放行复制
+  if (isAllowedElement(activeEl)) return
+
   const selection = window.getSelection()
   if (selection && selection.rangeCount > 0) {
     const range = selection.getRangeAt(0)
