@@ -1,0 +1,102 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.3.1)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: web
+
+      - name: Build Vue frontend
+        run: npm run build
+        working-directory: web
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Build Go backend (linux/amd64)
+        run: |
+          GOOS=linux GOARCH=amd64 go build -tags vue -ldflags="-s -w" -o dist/nexusbox-amd64
+
+      - name: Build Go backend (linux/arm64)
+        run: |
+          GOOS=linux GOARCH=arm64 go build -tags vue -ldflags="-s -w" -o dist/nexusbox-arm64
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ github.ref_name }}"
+          echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
+          # Extract changelog between this tag and the previous one
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            NOTES=$(git log --pretty=format:'- %s' ${PREV_TAG}..HEAD)
+          else
+            NOTES=$(git log --pretty=format:'- %s' HEAD~5..HEAD)
+          fi
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "## NexusBox v${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 📦 下载" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "| 架构 | 文件 |" >> $GITHUB_OUTPUT
+          echo "|------|------|" >> $GITHUB_OUTPUT
+          echo "| x86_64 / amd64 | nexusbox-amd64 |" >> $GITHUB_OUTPUT
+          echo "| ARM64 | nexusbox-arm64 |" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🔄 变更内容" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🚀 部署" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```bash' >> $GITHUB_OUTPUT
+          echo "# 停止旧服务" >> $GITHUB_OUTPUT
+          echo "systemctl stop nexusbox" >> $GITHUB_OUTPUT
+          echo "# 替换二进制（根据架构选择）" >> $GITHUB_OUTPUT
+          echo "cp nexusbox-amd64 /opt/nexusbox/nexusbox  # x86_64" >> $GITHUB_OUTPUT
+          echo "cp nexusbox-arm64 /opt/nexusbox/nexusbox  # ARM64" >> $GITHUB_OUTPUT
+          echo "# 启动服务" >> $GITHUB_OUTPUT
+          echo "systemctl start nexusbox" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: NexusBox v${{ steps.notes.outputs.version }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: |
+            dist/nexusbox-amd64
+            dist/nexusbox-arm64
+          draft: false
+          prerelease: false
