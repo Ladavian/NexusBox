@@ -221,7 +221,7 @@ func applyFastPathRules() error {
 	}
 	log.Printf("[FastPath] loaded %d CN IP ranges into direct_bypass", len(elements))
 
-	runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }")
+	runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority raw; policy accept; }")
 	runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "daddr", "@direct_bypass", "return")
 
 	log.Printf("[FastPath] DIRECT Fast Path enabled, CN IP traffic bypasses Mihomo")
@@ -235,6 +235,8 @@ func cleanupFastPathRules() {
 	}
 	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "direct_bypass", "2>/dev/null")
 	runCmd("nft", "delete", "set", "ip", "nexusbox_tproxy", "direct_bypass", "2>/dev/null")
+	// 清理 TUN 策略路由
+	runCmd("ip", "rule", "del", "fwmark", "2", "table", "main", "pref", "8999", "2>/dev/null")
 }
 
 func downloadCNIPList() error {
