@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -362,17 +363,18 @@ func enableTProxyRules(port int) error {
 		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "output", "meta", "l4proto", "{tcp,udp}", "meta", "mark", "set", "1", "accept")
 	}
 
-	// 9. DNS 重定向
-	runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", ":1053")
-	runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", ":1053")
+	// 9. DNS 重定向（从 config.yaml 读取 DNS 监听端口）
+	dnsPort := getDNSListenPort()
+	runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+	runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
 	if tproxyProxyLocal {
 		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "meta", "mark", "0xff", "return")
 		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "socket", "mark", "0xff", "return")
-		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "udp", "dport", "53", "redirect", "to", ":1053")
-		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "tcp", "dport", "53", "redirect", "to", ":1053")
+		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+		runCmd("nft", "add", "rule", "ip", "nexusbox_tproxy", "nat_output", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
 	}
 
-	log.Printf("[TProxy] 规则应用成功（含目的/源例外及本机代理开关）")
+	log.Printf("[TProxy] 规则应用成功（DNS → :%d）", dnsPort)
 	return nil
 }
 
@@ -389,6 +391,23 @@ func GetTproxyState() bool {
 	tproxyMu.RLock()
 	defer tproxyMu.RUnlock()
 	return tproxyEnableState
+}
+
+// getDNSListenPort 从 config.yaml 读取 DNS 监听端口，默认 1053
+func getDNSListenPort() int {
+	data, err := os.ReadFile(configTarget)
+	if err != nil {
+		return 1053
+	}
+	re := regexp.MustCompile(`(?m)^\s*listen:\s*[^:]*:(\d+)`)
+	m := re.FindStringSubmatch(string(data))
+	if len(m) > 1 {
+		port, err := strconv.Atoi(m[1])
+		if err == nil && port > 0 {
+			return port
+		}
+	}
+	return 1053
 }
 
 // ---------- HTTP Handlers ----------
