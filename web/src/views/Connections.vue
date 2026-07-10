@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, reactive, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onUnmounted, onActivated, onDeactivated, computed, reactive, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { apiFetch } from '../utils/api'
 import {
@@ -471,6 +471,14 @@ const extraColumns = computed(() => {
 onMounted(() => {
   connStore.subscribe()
   window.addEventListener('resize', handleResize)
+})
+
+onActivated(() => {
+  connStore.subscribe()
+})
+
+onDeactivated(() => {
+  connStore.unsubscribe()
 })
 
 onUnmounted(() => {

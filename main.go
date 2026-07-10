@@ -453,7 +453,7 @@ func wsProxyHandler(targetPath string) http.HandlerFunc {
 		}
 		coreConn, _, err := dialer.Dial("ws://localhost"+path, header)
 		if err != nil {
-			// 内核未运行或连接失败是预期情况，不记录日志
+			log.Printf("[WS] 连接内核 WebSocket 失败 (路径 %s): %v", targetPath, err)
 			return
 		}
 		defer coreConn.Close()
