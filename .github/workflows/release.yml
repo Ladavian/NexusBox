@@ -55,13 +55,8 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
-          # Extract changelog between this tag and the previous one
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            NOTES=$(git log --pretty=format:'- %s' ${PREV_TAG}..HEAD)
-          else
-            NOTES=$(git log --pretty=format:'- %s' HEAD~5..HEAD)
-          fi
+          # 读取 tag 注释作为 release 内容
+          TAG_MSG=$(git tag -l --format='%(contents)' ${VERSION})
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "## NexusBox v${VERSION#v}" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
@@ -74,7 +69,7 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "### 🔄 变更内容" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "$TAG_MSG" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
           echo "### 🚀 部署" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
