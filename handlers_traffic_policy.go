@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -107,14 +108,10 @@ func applyTrafficPolicyRules() error {
 	mode := trafficPolicyConfig.Mode
 	whitelist := trafficPolicyConfig.Whitelist
 	blacklist := trafficPolicyConfig.Blacklist
+	fastPath := trafficPolicyConfig.EnableFastPath
 	trafficPolicyMu.RUnlock()
 
-	// 清除旧的 traffic policy 规则
 	cleanupTrafficPolicyRules()
-
-	if mode == "all" {
-		return nil // 默认模式，无需额外规则
-	}
 
 	runCmd := func(name string, args ...string) {
 		cmd := exec.Command(name, args...)
@@ -123,17 +120,21 @@ func applyTrafficPolicyRules() error {
 		}
 	}
 
-	// 确保表存在
 	runCmd("nft", "add", "table", "ip", "nexusbox_tproxy")
 
-	// 创建 bypass 集合
+	// ---- Fast Path ----
+	if fastPath {
+		if err := applyFastPathRules(); err != nil {
+			log.Printf("[TrafficPolicy] Fast Path 失败: %v", err)
+		}
+	}
+
+	if mode == "all" {
+		return nil
+	}
+
 	var bypassIPs []string
 	if mode == "whitelist" {
-		// 白名单模式：非白名单客户端绕过 Mihomo
-		// 这里我们添加一个 bypass_ips 集合，但实际实现用 proxy_ips 集合+反向匹配
-		// 简化：创建 traffic_bypass 集合，白名单模式填非白名单IP（用 CIDR 覆盖全部）
-		// 实际上由于 IP 无法简单地"除白名单外全部"，这里用另一种策略：
-		// 创建 traffic_proxy 集合存放白名单 IP，添加规则：源 IP 不在 traffic_proxy 中 → return
 		runCmd("nft", "add", "set", "ip", "nexusbox_tproxy", "traffic_proxy", "{ type ipv4_addr; flags interval; }")
 		runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "traffic_proxy")
 		for _, c := range whitelist {
@@ -141,12 +142,9 @@ func applyTrafficPolicyRules() error {
 				runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "traffic_proxy", "{", c.IP, "}")
 			}
 		}
-		// 确保 prerouting 链存在
 		runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }", "2>/dev/null")
-		// 源 IP 不在白名单中 → 跳过 TProxy
 		runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "saddr", "!=", "@traffic_proxy", "return")
 	} else if mode == "blacklist" {
-		// 黑名单模式：黑名单客户端绕过 Mihomo
 		for _, c := range blacklist {
 			if c.IP != "" {
 				bypassIPs = append(bypassIPs, c.IP)
@@ -168,6 +166,99 @@ func applyTrafficPolicyRules() error {
 	return nil
 }
 
+// ===== DIRECT Fast Path =====
+
+const fastPathCacheFile = "/opt/nexusbox/var/fastpath_cn.cidr"
+
+func applyFastPathRules() error {
+	if _, err := os.Stat(fastPathCacheFile); os.IsNotExist(err) {
+		if err := downloadCNIPList(); err != nil {
+			return fmt.Errorf("download CN IP list failed: %w", err)
+		}
+	}
+
+	runCmd := func(name string, args ...string) {
+		cmd := exec.Command(name, args...)
+		if _, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("[FastPath] cmd failed %s: %v", name, err)
+		}
+	}
+
+	runCmd("nft", "add", "set", "ip", "nexusbox_tproxy", "direct_bypass", "{ type ipv4_addr; flags interval; }")
+	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "direct_bypass")
+
+	f, err := os.Open(fastPathCacheFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	count := 0
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "direct_bypass", "{", line, "}")
+		count++
+	}
+	log.Printf("[FastPath] loaded %d CN IP ranges into direct_bypass", count)
+
+	runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }", "2>/dev/null")
+	runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "daddr", "@direct_bypass", "return")
+
+	log.Printf("[FastPath] DIRECT Fast Path enabled, CN IP traffic bypasses Mihomo")
+	return nil
+}
+
+func cleanupFastPathRules() {
+	runCmd := func(name string, args ...string) {
+		cmd := exec.Command(name, args...)
+		cmd.CombinedOutput()
+	}
+	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "direct_bypass", "2>/dev/null")
+	runCmd("nft", "delete", "set", "ip", "nexusbox_tproxy", "direct_bypass", "2>/dev/null")
+}
+
+func downloadCNIPList() error {
+	urls := []string{
+		"https://raw.githubusercontent.com/mayaxcn/china-ip-list/master/chnroute.txt",
+	}
+
+	var lastErr error
+	for _, u := range urls {
+		log.Printf("[FastPath] downloading CN IP list: %s", u)
+		resp, err := http.Get(u)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			lastErr = fmt.Errorf("HTTP %d", resp.StatusCode)
+			continue
+		}
+
+		dir := filepath.Dir(fastPathCacheFile)
+		os.MkdirAll(dir, 0755)
+		f, err := os.Create(fastPathCacheFile)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(f, resp.Body)
+		if err != nil {
+			return err
+		}
+		log.Printf("[FastPath] CN IP list cached to %s", fastPathCacheFile)
+		return nil
+	}
+	return fmt.Errorf("all sources failed: %w", lastErr)
+}
+
 func cleanupTrafficPolicyRules() {
 	runCmd := func(name string, args ...string) {
 		cmd := exec.Command(name, args...)
@@ -179,6 +270,9 @@ func cleanupTrafficPolicyRules() {
 	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "traffic_bypass", "2>/dev/null")
 	runCmd("nft", "delete", "set", "ip", "nexusbox_tproxy", "traffic_proxy", "2>/dev/null")
 	runCmd("nft", "delete", "set", "ip", "nexusbox_tproxy", "traffic_bypass", "2>/dev/null")
+
+	// 同时清理 Fast Path 规则
+	cleanupFastPathRules()
 }
 
 func isValidCIDR(s string) bool {
