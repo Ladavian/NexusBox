@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -182,8 +183,20 @@ func handleConfigReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := generateConfig(subscribeConfig); err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "生成默认配置失败: "+err.Error())
+	defaultContent, err := getDefaultConfig()
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "读取默认配置失败: "+err.Error())
+		return
+	}
+
+	dir := filepath.Dir(configTarget)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "创建目录失败: "+err.Error())
+		return
+	}
+
+	if err := os.WriteFile(configTarget, defaultContent, 0644); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "写入默认配置失败: "+err.Error())
 		return
 	}
 
