@@ -211,19 +211,27 @@ const toggleTProxy = async (enable: boolean) => {
     const port = configs.value['tproxy-port'] || 0
     if (port === 0) {
       globalStore.showToast(t('config.tproxy_port_zero_warning'), 'warning')
-      // 回退开关状态
       configStore.tproxyEnabled = false
       return
     }
   }
 
-  // 调用后端更新状态（不涉及端口）
-  await apiFetch('/config/tproxy', {
+  const resp = await apiFetch('/config/tproxy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ enable })
   })
-  // 开关状态已由 v-model 双向绑定自动更新，无需额外赋值
+  
+  if (resp.ok) {
+    // 开关状态已由 v-model 双向绑定自动更新
+  } else if (resp.status === 409) {
+    // TUN 冲突
+    configStore.tproxyEnabled = false
+    globalStore.showToast(t('config.tproxy_tun_conflict'), 'error')
+  } else {
+    configStore.tproxyEnabled = !enable
+    globalStore.showToast(t('common.operation_failed'), 'error')
+  }
 }
 
 // 内核进程管理

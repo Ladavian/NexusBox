@@ -164,10 +164,15 @@ func main() {
 			}
 		}
 	}
-	// 恢复 TProxy 规则
+	// 恢复 TProxy 规则（与 TUN 互斥：TUN 优先）
 	go func() {
 		if tproxyEnableState {
 			time.Sleep(2 * time.Second) // 等 Mihomo 启动
+			if isTUNEnabled() {
+				log.Printf("[TProxy] TUN 已启用，跳过 TProxy。两者不可同时使用。")
+				tproxyEnableState = false
+				return
+			}
 			port := subscribeConfig.TproxyPort
 			if port <= 0 {
 				port = 7895

@@ -412,43 +412,45 @@ func getDNSListenPort() int {
 
 // ---------- HTTP Handlers ----------
 
-// handleTproxyState 处理开关（保持不变，但 POST 时重新应用规则）
+// handleTproxyState 处理 TProxy 开关（与 TUN 互斥）
 func handleTproxyState(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		tproxyMu.RLock()
 		enabled := tproxyEnableState
 		tproxyMu.RUnlock()
-		respondJSON(w, http.StatusOK, map[string]bool{"enabled": enabled})
+		tunEnabled := isTUNEnabled()
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"enabled":      enabled,
+			"tun_enabled":  tunEnabled,
+			"conflict":     enabled && tunEnabled,
+		})
 	case http.MethodPost:
 		var req struct{ Enable bool }
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "无效的请求格式")
 			return
 		}
+
+		// 如果要开启 TProxy，检查 TUN 状态
+		if req.Enable && isTUNEnabled() {
+			writeJSONError(w, http.StatusConflict, "TUN 已启用，请先关闭 TUN 再开启 TProxy。两者不可同时使用。")
+			return
+		}
+
 		tproxyMu.Lock()
 		tproxyEnableState = req.Enable
 		tproxyMu.Unlock()
 
 		// 持久化到 nexusbox.json
-		go func() {
-			data, _ := os.ReadFile(nexusboxConfigFile)
-			var raw map[string]interface{}
-			json.Unmarshal(data, &raw)
-			if raw == nil {
-				raw = make(map[string]interface{})
-			}
-			raw["tproxy_enabled"] = req.Enable
-			newData, _ := json.MarshalIndent(raw, "", "  ")
-			os.WriteFile(nexusboxConfigFile, newData, 0644)
-		}()
+		go saveTproxyState(req.Enable)
 
 		if req.Enable {
 			subscribeMu.RLock()
 			port := subscribeConfig.TproxyPort
 			subscribeMu.RUnlock()
 			if port > 0 {
-				disableTProxyRules() // 先清理
+				disableTProxyRules()
 				if err := enableTProxyRules(port); err != nil {
 					log.Printf("[TProxy] 添加规则失败: %v", err)
 				}
@@ -462,6 +464,28 @@ func handleTproxyState(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+// isTUNEnabled 检查 config.yaml 中 TUN 是否启用
+func isTUNEnabled() bool {
+	data, err := os.ReadFile(configTarget)
+	if err != nil {
+		return false
+	}
+	return regexp.MustCompile(`(?m)^tun:\s*\n\s+enable:\s*true`).Match(data)
+}
+
+// saveTproxyState 持久化 TProxy 开关状态
+func saveTproxyState(enabled bool) {
+	data, _ := os.ReadFile(nexusboxConfigFile)
+	var raw map[string]interface{}
+	json.Unmarshal(data, &raw)
+	if raw == nil {
+		raw = make(map[string]interface{})
+	}
+	raw["tproxy_enabled"] = enabled
+	newData, _ := json.MarshalIndent(raw, "", "  ")
+	os.WriteFile(nexusboxConfigFile, newData, 0644)
 }
 
 // handleTproxyExceptions 处理例外列表的获取和更新
