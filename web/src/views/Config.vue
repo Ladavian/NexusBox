@@ -555,6 +555,7 @@ const tproxyLoading = ref(true)
 const yamlContent = ref('')
 const yamlLoading = ref(false)
 const yamlSaving = ref(false)
+const yamlResetting = ref(false)
 const yamlLoaded = ref(false)
 
 // 认证配置状态
@@ -700,6 +701,33 @@ const saveYamlConfig = async () => {
     globalStore.showToast(`${t('common.error')}: ${(e as Error).message}`, 'error')
   } finally {
     yamlSaving.value = false
+  }
+}
+
+// 一键还原默认配置
+const resetYamlConfig = async () => {
+  const confirmed = await globalStore.showConfirm({
+    title: t('config.yaml_reset_title'),
+    message: t('config.yaml_reset_confirm'),
+    confirmText: t('config.yaml_reset_btn'),
+    type: 'danger'
+  })
+  if (!confirmed) return
+
+  yamlResetting.value = true
+  try {
+    const resp = await apiFetch('/configs/raw/reset', { method: 'POST' })
+    const data = await resp.json()
+    if (resp.ok) {
+      globalStore.showToast(t('config.yaml_reset_success'), 'success')
+      await loadYamlConfig()
+    } else {
+      globalStore.showToast(data.message || t('common.operation_failed'), 'error')
+    }
+  } catch (e) {
+    globalStore.showToast(`${t('common.error')}: ${(e as Error).message}`, 'error')
+  } finally {
+    yamlResetting.value = false
   }
 }
 
@@ -1217,6 +1245,12 @@ onActivated(() => {
               <button @click="saveYamlConfig" :disabled="yamlSaving || !yamlLoaded"
                 class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent hover:bg-accent-hover text-white shadow-sm transition-all disabled:opacity-50 flex items-center gap-1">
                 {{ yamlSaving ? '...' : t('config.yaml_save') }}
+              </button>
+              <span class="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-0.5"></span>
+              <button @click="resetYamlConfig" :disabled="yamlResetting"
+                class="px-2 py-1.5 text-[10px] font-semibold rounded-lg text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all disabled:opacity-50"
+                :title="t('config.yaml_reset')">
+                {{ yamlResetting ? '...' : t('config.yaml_reset') }}
               </button>
             </div>
           </div>

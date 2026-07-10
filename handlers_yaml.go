@@ -173,3 +173,28 @@ func syncConfigFileFields(fields map[string]interface{}) {
 
 	os.WriteFile(configTarget, []byte(text), 0644)
 }
+
+// handleConfigReset 一键还原为内置默认配置
+// POST /configs/raw/reset
+func handleConfigReset(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := generateConfig(subscribeConfig); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "生成默认配置失败: "+err.Error())
+		return
+	}
+
+	if err := reloadCore(); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		io.WriteString(w, `{"status":"warning","message":"默认配置已还原，但热重载失败: `+err.Error()+`"}`)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	io.WriteString(w, `{"status":"ok","message":"已还原为默认配置并热重载"}`)
+}

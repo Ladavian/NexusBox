@@ -1326,7 +1326,7 @@ func parseSubscriptionUserinfo(header string) map[string]interface{} {
 	return result
 }
 
-// ===== 内置配置模板（基于 nzqichiyu 规则集） =====
+// ===== 内置配置模板 =====
 
 const configTemplate = `mixed-port:
 tproxy-port:
@@ -1397,7 +1397,7 @@ dns:
     - "rule-set:fakeipfilter_domain"
 `
 
-// proxyGroupsNzq 为 nzqichiyu 规则集代理组（已去除 Emoji）
+// proxyGroupsBase 为内置代理组配置（已去除 Emoji）
 const proxyGroupsBase = `
 proxy-groups:
   - {name: 默认代理, type: select, proxies: [香港故转, 日本故转, 狮城故转, 美国故转, 香港自动, 日本自动, 狮城自动, 美国自动, 自动选择, 香港节点, 日本节点, 狮城节点, 美国节点, 全部节点, 直连]}
@@ -1429,10 +1429,10 @@ proxy-groups:
   - {name: 直连, type: select, proxies: [DIRECT], hidden: true}
 `
 
-// proxyGroupsFullTemplate 与 base 使用同一套 nzqichiyu 规则集
+// proxyGroupsFullTemplate 与 base 使用同一套配置
 const proxyGroupsFullTemplate = proxyGroupsBase
 
-// rulesBase 为 nzqichiyu 规则集
+// rulesBase 为内置规则集
 const rulesBase = `
 rules:
   - RULE-SET,private_ip,直连,no-resolve
@@ -1459,7 +1459,7 @@ rules:
   - MATCH,漏网之鱼
 `
 
-// ruleProvidersFull 为 nzqichiyu 规则提供商（基于 MetaCubeX 规则仓库）
+// ruleProvidersFull 为内置规则提供商（基于 MetaCubeX 规则仓库）
 const ruleProvidersFull = `
 rule-anchor:
   ip: &ip {type: http, interval: 86400, behavior: ipcidr, format: mrs}
@@ -1491,7 +1491,7 @@ rule-providers:
   apple_ip: {<<: *ip, url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/apple.mrs"}
 `
 
-// rulesFull 与 base 使用同一套 nzqichiyu 规则集
+// rulesFull 与 base 使用同一套规则集
 const rulesFull = rulesBase
 
 // dnsBlock 不再需要，DNS 已内置在 configTemplate 中

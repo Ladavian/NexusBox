@@ -310,6 +310,7 @@ func main() {
 	mux.HandleFunc(baseURL+"/version", authMiddleware(handleVersion))
 	mux.HandleFunc(baseURL+"/configs", authMiddleware(handleConfigsAPI))
 	mux.HandleFunc(baseURL+"/configs/raw", authMiddleware(handleConfigsRaw))
+	mux.HandleFunc(baseURL+"/configs/raw/reset", authMiddleware(handleConfigReset))
 	mux.HandleFunc(baseURL+"/interfaces", authMiddleware(handleInterfaces))
 	mux.HandleFunc(baseURL+"/configs/geo", authMiddleware(handleConfigsGeo))
 	mux.HandleFunc(baseURL+"/providers/geo", authMiddleware(handleProvidersGeo))
