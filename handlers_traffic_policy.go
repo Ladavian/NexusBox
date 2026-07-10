@@ -144,7 +144,7 @@ func applyTrafficPolicyRules() error {
 				runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "traffic_proxy", "{", c.IP, "}")
 			}
 		}
-		runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }", "2>/dev/null")
+		runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }")
 		runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "saddr", "!=", "@traffic_proxy", "return")
 	} else if mode == "blacklist" {
 		for _, c := range blacklist {
@@ -160,7 +160,7 @@ func applyTrafficPolicyRules() error {
 					runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "traffic_bypass", "{", ip, "}")
 				}
 			}
-			runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }", "2>/dev/null")
+			runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }")
 			runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "saddr", "@traffic_bypass", "return")
 		}
 	}
@@ -179,35 +179,49 @@ func applyFastPathRules() error {
 		}
 	}
 
-	runCmd := func(name string, args ...string) {
-		cmd := exec.Command(name, args...)
-		if _, err := cmd.CombinedOutput(); err != nil {
-			log.Printf("[FastPath] cmd failed %s: %v", name, err)
-		}
-	}
-
-	runCmd("nft", "add", "set", "ip", "nexusbox_tproxy", "direct_bypass", "{ type ipv4_addr; flags interval; }")
-	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "direct_bypass")
-
 	f, err := os.Open(fastPathCacheFile)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	var elements []string
 	scanner := bufio.NewScanner(f)
-	count := 0
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "direct_bypass", "{", line, "}")
-		count++
+		elements = append(elements, line)
 	}
-	log.Printf("[FastPath] loaded %d CN IP ranges into direct_bypass", count)
 
-	runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }", "2>/dev/null")
+	if len(elements) == 0 {
+		return fmt.Errorf("CN IP list is empty")
+	}
+
+	runCmd := func(name string, args ...string) {
+		cmd := exec.Command(name, args...)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("[FastPath] cmd failed %s %v: %v\\n%s", name, args, err, string(out))
+		}
+	}
+
+	runCmd("nft", "add", "set", "ip", "nexusbox_tproxy", "direct_bypass", "{ type ipv4_addr; flags interval; }")
+	runCmd("nft", "flush", "set", "ip", "nexusbox_tproxy", "direct_bypass")
+
+	// 分批加载，每批 500 条，避免 nft 命令行过长
+	batchSize := 500
+	for i := 0; i < len(elements); i += batchSize {
+		end := i + batchSize
+		if end > len(elements) {
+			end = len(elements)
+		}
+		batch := strings.Join(elements[i:end], ", ")
+		runCmd("nft", "add", "element", "ip", "nexusbox_tproxy", "direct_bypass", "{", batch, "}")
+	}
+	log.Printf("[FastPath] loaded %d CN IP ranges into direct_bypass", len(elements))
+
+	runCmd("nft", "add", "chain", "ip", "nexusbox_tproxy", "prerouting", "{ type filter hook prerouting priority mangle; policy accept; }")
 	runCmd("nft", "insert", "rule", "ip", "nexusbox_tproxy", "prerouting", "ip", "daddr", "@direct_bypass", "return")
 
 	log.Printf("[FastPath] DIRECT Fast Path enabled, CN IP traffic bypasses Mihomo")

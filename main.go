@@ -151,6 +151,7 @@ func main() {
 	// === 检查和准备 ===
 	loadSubscribeConfig()
 	loadTrafficPolicyConfig()
+	go applyTrafficPolicyRules()
 	initCoreLogger()
 	startAllTimers()
 	loadTproxySrcExceptions()
