@@ -87,6 +87,12 @@ jobs:
           echo "# 启动服务" >> $GITHUB_OUTPUT
           echo "systemctl start nexusbox" >> $GITHUB_OUTPUT
           echo '```' >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🛠 一键安装（全新服务器）" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```bash' >> $GITHUB_OUTPUT
+          echo "curl -fsSL https://raw.githubusercontent.com/Ladavian/NexusBox/main/install.sh | bash" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release

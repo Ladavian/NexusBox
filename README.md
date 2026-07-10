@@ -1,91 +1,100 @@
-# 🚀 NexusBox
+# <img src="https://raw.githubusercontent.com/Ladavian/NexusBox/main/web/dist/icon.svg" width="28" height="28"> NexusBox
 
-> 轻量级 Mihomo (Clash.Meta) 内核管理面板 | 基于 [Fluxor](https://github.com/shuangji66/fluxor) 二次开发
+> 轻量级 Mihomo 内核管理面板 — 让裸核配置像订阅客户端一样简单
 
-NexusBox 是一个前后端一体化的 Web 管理面板，专为 Mihomo 内核设计。在 Fluxor 的基础上新增了 **账户认证**、**YAML 在线编辑器** 等实用功能，让裸核管理更加安全便捷。
-
----
-
-## ✨ 新特性（vs Fluxor）
-
-- 🔐 **账密登录认证** — Cookie Session 机制，防止面板被外网扫描滥用
-- 📝 **YAML 在线编辑器** — Web 端直接查看/编辑 `config.yaml`，保存即热重载
-- 🎨 **精简主题** — 浅色 / 深色 / 跟随系统
-- 🔓 **解除互斥** — TUN 与 TProxy 可同时启用
-- 📦 **一键安装脚本** — 自动拉取 Mihomo 内核 + 注册 systemd 服务
+NexusBox 是一个**前后端一体化**的 Web 管理面板，为 [Mihomo](https://github.com/MetaCubeX/mihomo)（Clash.Meta）内核提供开箱即用的可视化管理。你只需要填入订阅链接，系统会自动生成完整的 `config.yaml`，无需手写一行规则。
 
 ---
 
-## 📂 目录结构
+## 截图预览
 
-```
-/opt/nexusbox/        # NexusBox 面板程序
-  ├── nexusbox        # 主二进制
-  └── var/            # 运行时数据
-/opt/mihomo/          # Mihomo 内核
-  └── mihomo
-/opt/config/          # 配置文件
-  ├── config.yaml     # 内核配置
-  └── nexusbox.json   # 面板配置（订阅/账户）
-```
+| 仪表盘 | 代理管理 | YAML 编辑器 |
+|:---:|:---:|:---:|
+| 实时速度、流量、内存监控 | 节点切换、延迟测速、分组筛选 | CodeMirror 6 语法高亮编辑器 |
 
 ---
 
-## 🚀 快速安装
+## 快速安装
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Ladavian/NexusBox/main/install.sh | bash
 ```
 
-安装后访问 **`http://<服务器IP>:18080`**
-
-**默认账户：`admin` / `admin`**
+安装完成后访问 **`http://<服务器IP>:18080`**，默认账户 **`admin / admin`**。
 
 ---
 
-## 🔧 手动构建
+## 手动构建
 
 ```bash
-# 1. 前端
+# 前端
 cd web && npm install && npm run build && cd ..
 
-# 2. 后端（嵌入 Vue 前端）
-go build -tags vue -o nexusbox
+# 后端（带 Vue 前端）
+go build -tags vue -ldflags="-s -w" -o nexusbox
 
-# 3. 启动
+# 启动
 ./nexusbox
 ```
 
 ---
 
-## 🧩 核心特性
+## 功能
 
-- **内核生命周期管理**：启动、停止、状态查询、配置热重载
-- **订阅中心**：订阅链接的 CRUD 管理，自动生成 `config.yaml` 并应用
-- **实时监控**：WebSocket 实时推送上/下载速度、内存、日志流、连接历史
-- **透明代理 (TProxy)**：nftables 透明代理，端口/源地址例外过滤
-- **双前端**：Vue 3 (推荐) + 原生 Vanilla JS
-- **YAML 编辑器**：暗色终端风格，保存即热重载
-- **登录认证**：Cookie Session，24h 有效期
+| 模块 | 说明 |
+|------|------|
+| **订阅中心** | 支持多订阅链接，自动生成 config.yaml，仅需填入链接即可使用 |
+| **代理管理** | 节点延迟测速、分组切换、规则模式 (Rule/Global/Direct) |
+| **规则管理** | 规则列表查看、启用/禁用、规则提供商更新 |
+| **连接监控** | 实时活跃连接、已关闭历史、速率计算、搜索筛选 |
+| **日志查看** | 实时日志流、级别过滤、暂停/自动滚动 |
+| **YAML 编辑器** | CodeMirror 6 在线编辑，一键还原默认配置 |
+| **TProxy** | nftables 透明代理，DNS 自动劫持 |
+| **账户认证** | Cookie Session 登录，防止面板被扫描滥用 |
+| **国际化** | 中文 / English 切换 |
 
 ---
 
-## 🛠 技术栈
+## 目录结构
+
+```
+/opt/nexusbox/        # 面板程序
+  └── nexusbox        # 主二进制
+/opt/mihomo/          # Mihomo 内核
+  └── mihomo
+/opt/config/          # 配置文件
+  ├── config.yaml     # 内核配置
+  └── nexusbox.json   # 面板配置
+```
+
+---
+
+## 技术栈
 
 | 层 | 技术 |
 |---|---|
-| 后端 | Go 1.26 (标准库) + gorilla/websocket |
+| 后端 | Go 1.26 标准库 + gorilla/websocket |
 | 前端 | Vue 3 + TypeScript + Pinia + Vite + Tailwind CSS |
-| 国际化 | vue-i18n (中文/English) |
+| 编辑器 | CodeMirror 6 + YAML 语法高亮 |
+| 国际化 | vue-i18n（中文 / English） |
 
 ---
 
-## 🙏 致敬
+## 环境变量
 
-本项目基于 [**shuangji66/fluxor**](https://github.com/shuangji66/fluxor) 二次开发。感谢原作者提供的优秀面板框架！
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `FLUXOR_ADDR` | `0.0.0.0:18080` | 面板监听地址 |
+| `BASE_URL` | `/` | 反向代理路径前缀 |
+| `CORE_BIN` | `/opt/mihomo/mihomo` | 内核二进制路径 |
+| `CONFIG_TARGET` | `/opt/config/config.yaml` | 内核配置文件路径 |
 
 ---
 
-## 📄 License
+## 致谢
+
+本项目基于 [Fluxor](https://github.com/shuangji66/fluxor) 二次开发，感谢原作者的开源贡献。
+
+## License
 
 MIT
