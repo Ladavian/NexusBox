@@ -8,12 +8,14 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 // ===== 数据结构 =====
@@ -224,39 +226,53 @@ func cleanupFastPathRules() {
 func downloadCNIPList() error {
 	urls := []string{
 		"https://raw.githubusercontent.com/mayaxcn/china-ip-list/master/chnroute.txt",
+		"https://cdn.jsdelivr.net/gh/mayaxcn/china-ip-list@master/chnroute.txt",
 	}
 
 	var lastErr error
 	for _, u := range urls {
 		log.Printf("[FastPath] downloading CN IP list: %s", u)
-		resp, err := http.Get(u)
+		data, err := fetchURL(u)
 		if err != nil {
 			lastErr = err
-			continue
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			lastErr = fmt.Errorf("HTTP %d", resp.StatusCode)
 			continue
 		}
 
 		dir := filepath.Dir(fastPathCacheFile)
 		os.MkdirAll(dir, 0755)
-		f, err := os.Create(fastPathCacheFile)
-		if err != nil {
+		if err := os.WriteFile(fastPathCacheFile, data, 0644); err != nil {
 			return err
 		}
-		defer f.Close()
-
-		_, err = io.Copy(f, resp.Body)
-		if err != nil {
-			return err
-		}
-		log.Printf("[FastPath] CN IP list cached to %s", fastPathCacheFile)
+		log.Printf("[FastPath] CN IP list cached to %s (%d bytes)", fastPathCacheFile, len(data))
 		return nil
 	}
 	return fmt.Errorf("all sources failed: %w", lastErr)
+}
+
+func fetchURL(u string) ([]byte, error) {
+	// 先尝试代理下载（通过 Mihomo）
+	proxyURL, _ := url.Parse("http://127.0.0.1:7890")
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)},
+	}
+	resp, err := client.Get(u)
+	if err == nil && resp.StatusCode == http.StatusOK {
+		defer resp.Body.Close()
+		return io.ReadAll(resp.Body)
+	}
+
+	// 回退直连
+	client = &http.Client{Timeout: 30 * time.Second}
+	resp, err = client.Get(u)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	return io.ReadAll(resp.Body)
 }
 
 func cleanupTrafficPolicyRules() {
