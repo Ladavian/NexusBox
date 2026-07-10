@@ -152,9 +152,6 @@ func main() {
 
 	// === 检查和准备 ===
 	loadSubscribeConfig()
-	loadTrafficPolicyConfig()
-	go applyTrafficPolicyRules()
-
 	// 从 nexusbox.json 恢复 TProxy 状态
 	if data, err := os.ReadFile(nexusboxConfigFile); err == nil {
 		var raw map[string]json.RawMessage
@@ -352,9 +349,6 @@ func main() {
 	mux.HandleFunc(baseURL+"/config/tproxy", authMiddleware(handleTproxyState))
 	mux.HandleFunc(baseURL+"/config/tproxy/exceptions", authMiddleware(handleTproxyExceptions))
 	mux.HandleFunc(baseURL+"/config/tproxy/proxy-local", authMiddleware(handleTproxyProxyLocal))
-	mux.HandleFunc(baseURL+"/config/traffic-policy", authMiddleware(handleTrafficPolicy))
-	mux.HandleFunc(baseURL+"/config/traffic-policy/devices", authMiddleware(handleTrafficPolicyDevices))
-	mux.HandleFunc(baseURL+"/config/traffic-policy/status", authMiddleware(handleTrafficPolicyStatus))
 	mux.HandleFunc(baseURL+"/config/dns-failover", authMiddleware(handleDnsFailover))
 
 	mux.HandleFunc(baseURL+"/ipinfo/local/v4", authMiddleware(handleLocalIPv4))

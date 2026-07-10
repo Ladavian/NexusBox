@@ -25,8 +25,7 @@ import {
   CloseCircleOutline,
   AlertCircleOutline,
   CloseOutline,
-  PaperPlaneOutline,
-  ShieldCheckmarkOutline
+  PaperPlaneOutline
 } from '@vicons/ionicons5'
 
 // 视图组件导入
@@ -37,7 +36,6 @@ import Connections from './views/Connections.vue'
 import Logs from './views/Logs.vue'
 import Config from './views/Config.vue'
 import Subscription from './views/Subscription.vue'
-import TrafficPolicy from './views/TrafficPolicy.vue'
 import Login from './views/Login.vue'
 
 const appVersion = __APP_VERSION__
@@ -62,7 +60,6 @@ const components: Record<string, any> = {
   logs: Logs,
   config: Config,
   subscription: Subscription,
-  trafficPolicy: TrafficPolicy
 }
 
 const activeComponent = computed(() => {
@@ -393,23 +390,6 @@ onUnmounted(() => {
           </span>
         </button>
 
-        <!-- 流量策略 -->
-        <button @click="selectTab('trafficPolicy')" 
-          class="w-full flex items-center rounded-xl font-medium text-sm transition-all duration-300 active:scale-95 group relative justify-start"
-          :class="[
-            globalStore.activeTab === 'trafficPolicy' ? 'sidebar-active font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
-            globalStore.isSidebarCollapsed 
-              ? 'px-2.5 py-2 hover:scale-105' 
-              : 'px-3.5 py-2.5 hover:translate-x-1'
-          ]"
-          :title="globalStore.isSidebarCollapsed ? t('nav.trafficPolicy') : ''">
-          <ShieldCheckmarkOutline class="w-5 h-5 shrink-0" />
-          <span class="transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden"
-            :class="globalStore.isSidebarCollapsed ? 'opacity-0 max-w-0 ml-0' : 'opacity-100 max-w-32 ml-3'">
-            {{ t('nav.trafficPolicy') }}
-          </span>
-        </button>
-
         <!-- 配置 -->
         <button @click="selectTab('config')" 
           class="w-full flex items-center rounded-xl font-medium text-sm transition-all duration-300 active:scale-95 group relative justify-start"
@@ -523,10 +503,6 @@ onUnmounted(() => {
           <span class="text-[9px] font-medium">{{ t('nav.config') }}</span>
         </button>
 
-        <button @click="selectTab('trafficPolicy')" class="flex flex-col items-center gap-0.5 transition-all duration-200 active:scale-95" :class="globalStore.activeTab === 'trafficPolicy' ? 'text-accent font-semibold scale-105' : 'text-slate-500 dark:text-slate-400'">
-          <ShieldCheckmarkOutline class="w-5 h-5" />
-          <span class="text-[9px] font-medium">{{ t('nav.trafficPolicy') }}</span>
-        </button>
       </nav>
     </div>
 
