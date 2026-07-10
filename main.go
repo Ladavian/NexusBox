@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -152,6 +154,32 @@ func main() {
 	loadSubscribeConfig()
 	loadTrafficPolicyConfig()
 	go applyTrafficPolicyRules()
+
+	// 从 nexusbox.json 恢复 TProxy 状态
+	if data, err := os.ReadFile(nexusboxConfigFile); err == nil {
+		var raw map[string]json.RawMessage
+		if json.Unmarshal(data, &raw) == nil {
+			if tpRaw, ok := raw["tproxy_enabled"]; ok {
+				var tp bool
+				if json.Unmarshal(tpRaw, &tp) == nil {
+					tproxyEnableState = tp
+				}
+			}
+		}
+	}
+	// 恢复 TProxy 规则
+	go func() {
+		if tproxyEnableState {
+			time.Sleep(2 * time.Second) // 等 Mihomo 启动
+			port := subscribeConfig.TproxyPort
+			if port <= 0 {
+				port = 7895
+			}
+			if err := enableTProxyRules(port); err != nil {
+				log.Printf("[TProxy] 启动恢复失败: %v", err)
+			}
+		}
+	}()
 	initCoreLogger()
 	startAllTimers()
 	loadTproxySrcExceptions()

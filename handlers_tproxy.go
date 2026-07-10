@@ -411,6 +411,19 @@ func handleTproxyState(w http.ResponseWriter, r *http.Request) {
 		tproxyEnableState = req.Enable
 		tproxyMu.Unlock()
 
+		// 持久化到 nexusbox.json
+		go func() {
+			data, _ := os.ReadFile(nexusboxConfigFile)
+			var raw map[string]interface{}
+			json.Unmarshal(data, &raw)
+			if raw == nil {
+				raw = make(map[string]interface{})
+			}
+			raw["tproxy_enabled"] = req.Enable
+			newData, _ := json.MarshalIndent(raw, "", "  ")
+			os.WriteFile(nexusboxConfigFile, newData, 0644)
+		}()
+
 		if req.Enable {
 			subscribeMu.RLock()
 			port := subscribeConfig.TproxyPort
