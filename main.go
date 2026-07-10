@@ -150,6 +150,7 @@ func main() {
 
 	// === 检查和准备 ===
 	loadSubscribeConfig()
+	loadTrafficPolicyConfig()
 	initCoreLogger()
 	startAllTimers()
 	loadTproxySrcExceptions()
@@ -322,6 +323,9 @@ func main() {
 	mux.HandleFunc(baseURL+"/config/tproxy", authMiddleware(handleTproxyState))
 	mux.HandleFunc(baseURL+"/config/tproxy/exceptions", authMiddleware(handleTproxyExceptions))
 	mux.HandleFunc(baseURL+"/config/tproxy/proxy-local", authMiddleware(handleTproxyProxyLocal))
+	mux.HandleFunc(baseURL+"/config/traffic-policy", authMiddleware(handleTrafficPolicy))
+	mux.HandleFunc(baseURL+"/config/traffic-policy/devices", authMiddleware(handleTrafficPolicyDevices))
+	mux.HandleFunc(baseURL+"/config/traffic-policy/status", authMiddleware(handleTrafficPolicyStatus))
 	mux.HandleFunc(baseURL+"/config/dns-failover", authMiddleware(handleDnsFailover))
 
 	mux.HandleFunc(baseURL+"/ipinfo/local/v4", authMiddleware(handleLocalIPv4))
