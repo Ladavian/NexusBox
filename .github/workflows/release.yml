@@ -56,7 +56,7 @@ jobs:
           VERSION="${{ github.ref_name }}"
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
           # 读取 tag 注释作为 release 内容
-          TAG_MSG=$(git cat-file -p refs/tags/${VERSION} 2>/dev/null | tail -n +6 || echo "")
+          TAG_MSG=$(git cat-file -p refs/tags/${VERSION} 2>/dev/null | sed "1,5d" || echo "")
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "## NexusBox v${VERSION#v}" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
