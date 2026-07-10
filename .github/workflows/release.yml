@@ -99,5 +99,5 @@ jobs:
           files: |
             dist/nexusbox-amd64
             dist/nexusbox-arm64
-          draft: false
+          draft: true
           prerelease: false
