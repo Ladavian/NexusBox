@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"regexp"
 	"strings"
 )
 
@@ -59,6 +62,69 @@ func handleConnections(w http.ResponseWriter, _ *http.Request) {
 }
 
 // ---------- 配置管理 ----------
+
+// handleConfigSubscription 从 config.yaml 读取订阅相关字段
+// GET /configs/subscription → { proxy_port, panel_port, panel_secret, tproxy_port, ui_panel }
+func handleConfigSubscription(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	result := map[string]interface{}{}
+
+	// 如果 config.yaml 不存在，返回空对象
+	if _, err := os.Stat(configTarget); os.IsNotExist(err) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(result)
+		return
+	}
+
+	content, err := os.ReadFile(configTarget)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "读取配置文件失败: "+err.Error())
+		return
+	}
+	text := string(content)
+
+	// 提取 mixed-port（代理端口）
+	if m := regexp.MustCompile(`(?m)^mixed-port:\s*(\d+)`).FindStringSubmatch(text); len(m) > 1 {
+		if v, err := fmt.Sscanf(m[1], "%d", new(int)); err == nil {
+			_ = v
+		}
+		result["proxy_port"] = parseIntSafe(m[1])
+	}
+	// 提取 tproxy-port
+	if m := regexp.MustCompile(`(?m)^tproxy-port:\s*(\d+)`).FindStringSubmatch(text); len(m) > 1 {
+		result["tproxy_port"] = parseIntSafe(m[1])
+	}
+	// 提取 external-controller
+	if m := regexp.MustCompile(`(?m)^external-controller:\s*['"]?[^'"]*:(\d+)['"]?`).FindStringSubmatch(text); len(m) > 1 {
+		result["panel_port"] = parseIntSafe(m[1])
+	}
+	// 提取 secret
+	if m := regexp.MustCompile(`(?m)^secret:\s*['"]?([^'"\s]+)['"]?`).FindStringSubmatch(text); len(m) > 1 {
+		result["panel_secret"] = m[1]
+	}
+	// 提取 external-ui
+	if m := regexp.MustCompile(`(?m)^external-ui:\s*(\S+)`).FindStringSubmatch(text); len(m) > 1 {
+		ui := m[1]
+		if ui == "ui/meta" {
+			result["ui_panel"] = "metacubexd"
+		} else if ui == "ui/zash" {
+			result["ui_panel"] = "zashboard"
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
+func parseIntSafe(s string) int {
+	v := 0
+	fmt.Sscanf(s, "%d", &v)
+	return v
+}
 
 // handleConfigsAPI 处理配置的获取、修改和重载
 func handleConfigsAPI(w http.ResponseWriter, r *http.Request) {

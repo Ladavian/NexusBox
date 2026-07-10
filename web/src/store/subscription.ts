@@ -57,21 +57,31 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   // 获取订阅中心配置
   const loadConfig = async () => {
     try {
-      const resp = await apiFetch('/subscribe/config')
+      const [resp, cfgResp] = await Promise.all([
+        apiFetch('/subscribe/config'),
+        apiFetch('/configs/subscription')
+      ])
+      
       if (resp.ok) {
         const cfg = await resp.json()
         const subs = cfg.subscriptions || []
         savedSubNames.value = new Set(subs.map((s: any) => s.name))
+        
+        let yamlFields: any = {}
+        if (cfgResp.ok) {
+          yamlFields = await cfgResp.json()
+        }
+        
         currentConfig.value = {
-          proxy_port: cfg.proxy_port || 7890,
-          panel_port: cfg.panel_port || 9090,
-          panel_secret: cfg.panel_secret || '',
+          proxy_port: yamlFields.proxy_port || cfg.proxy_port || 7890,
+          panel_port: yamlFields.panel_port || cfg.panel_port || 9090,
+          panel_secret: yamlFields.panel_secret || cfg.panel_secret || '',
           rule_group: cfg.rule_group || 'base',
-          ui_panel: cfg.ui_panel || 'metacubexd',
+          ui_panel: yamlFields.ui_panel || cfg.ui_panel || 'metacubexd',
           meta_backend_url: cfg.meta_backend_url || '',
           mode: cfg.mode || 'merge',
           active_subscription: cfg.active_subscription || '',
-          tproxy_port: cfg.tproxy_port ?? 7898,
+          tproxy_port: yamlFields.tproxy_port ?? cfg.tproxy_port ?? 7898,
           subscriptions: subs.map((s: any) => {
             // 将后端存储的 subscription_info 映射为前端的 info 对象
             const info = s.subscription_info ? {
