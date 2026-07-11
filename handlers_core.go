@@ -185,29 +185,42 @@ func reloadCore() error {
 
 // isCoreRunning 检查内核是否在运行（通过 PID 文件）
 func isCoreRunning() bool {
+	// 先检查 PID 文件
 	data, err := os.ReadFile(corePidFile)
-	if err != nil {
-		return false
+	if err == nil {
+		pidStr := strings.TrimSpace(string(data))
+		if pidStr != "" {
+			pid, err := strconv.Atoi(pidStr)
+			if err == nil {
+				process, err := os.FindProcess(pid)
+				if err == nil && process.Signal(syscall.Signal(0)) == nil {
+					return true
+				}
+			}
+		}
 	}
-	pidStr := strings.TrimSpace(string(data))
-	if pidStr == "" {
-		return false
+	// PID 文件不可靠时，检查是否有 mihomo 进程在运行
+	cmd := exec.Command("pgrep", "-f", "mihomo.*-d.*"+coreWorkDir)
+	output, err := cmd.Output()
+	if err == nil && len(output) > 0 {
+		return true
 	}
-	pid, err := strconv.Atoi(pidStr)
-	if err != nil {
-		return false
-	}
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-	return process.Signal(syscall.Signal(0)) == nil
+	return false
 }
 
 // startCore 启动内核进程
 func startCore() error {
 	if isCoreRunning() {
 		return fmt.Errorf("内核已在运行")
+	}
+	// 如果 pgrep 能找到 mihomo 但 PID 文件缺失，补写 PID 文件
+	pgrepCmd := exec.Command("pgrep", "-f", "mihomo.*-d.*"+coreWorkDir)
+	output, _ := pgrepCmd.Output()
+	pgrepPid := strings.TrimSpace(string(output))
+	if pgrepPid != "" {
+		os.MkdirAll(filepath.Dir(corePidFile), 0755)
+		os.WriteFile(corePidFile, []byte(pgrepPid+"\n"), 0644)
+		return nil
 	}
 
 	// 确保配置文件存在，若不存在则使用 subscribeConfig 生成；若存在则强制补齐网关属性
