@@ -973,14 +973,10 @@ func startDnsFailover() {
 				}
 
 				running := isCoreRunning()
-				mihomoDNSOK := running && canResolveViaMihomo()
 				netOK := canReachInternet()
 
-				// 三个条件任一不满足就触发故障切换：
-				// 1. Mihomo 进程停止
-				// 2. 无法上网
-				// 3. Mihomo DNS 不响应（TUN/TProxy 挂了但进程还在）
-				needFailover := !running || !netOK || (running && !mihomoDNSOK)
+				// 进程不在或 TCP 不通 → 故障切换
+				needFailover := !running || !netOK
 
 				if needFailover {
 					recoveryCount = 0
@@ -989,15 +985,12 @@ func startDnsFailover() {
 						onPublicDNS = true
 						if !running {
 							log.Printf("[DNS] Mihomo 已停止，切换至公共 DNS")
-						} else if running && !mihomoDNSOK {
-							log.Printf("[DNS] Mihomo DNS 无响应（TUN/TProxy 可能未正常工作），切换至公共 DNS")
 						} else {
-							log.Printf("[DNS] 网络不通，切换至公共 DNS")
+							log.Printf("[DNS] 无法上网（TCP 不通），切换至公共 DNS")
 						}
 					}
 				} else if onPublicDNS {
-					// 在公共 DNS 下，等 Mihomo DNS 真正恢复才切回
-					if mihomoDNSOK {
+					if canResolveViaMihomo() {
 						recoveryCount++
 						if recoveryCount >= 3 {
 							switchToMihomoDNS()
@@ -1011,7 +1004,6 @@ func startDnsFailover() {
 				}
 
 				lastCoreWasRunning = running
-				lastNetOK = netOK
 			case <-dnsFailoverStop:
 				ticker.Stop()
 				if isCoreRunning() && canReachInternet() {
@@ -1025,21 +1017,14 @@ func startDnsFailover() {
 	}()
 }
 
-// canReachInternet 测试是否能正常上网（双目标确认，避免误判）
+// canReachInternet 快速 TCP 连接测试（不依赖 DNS，1 秒超时）
 func canReachInternet() bool {
-	client := &http.Client{Timeout: 3 * time.Second}
-	targets := []string{"http://www.baidu.com", "http://223.5.5.5"}
-	ok := 0
-	for _, u := range targets {
-		resp, err := client.Get(u)
-		if err == nil {
-			resp.Body.Close()
-			if resp.StatusCode > 0 {
-				ok++
-			}
-		}
+	conn, err := net.DialTimeout("tcp", "8.8.8.8:53", 1*time.Second)
+	if err != nil {
+		return false
 	}
-	return ok > 0 // 至少一个可达
+	conn.Close()
+	return true
 }
 
 // canResolveViaMihomo 测试 Mihomo DNS 是否正常工作
@@ -1075,10 +1060,21 @@ func switchToPublicDNS() {
 	data, _ := os.ReadFile(dnsResolvConf)
 	os.WriteFile(dnsBackupPath, data, 0644)
 	os.WriteFile(dnsResolvConf, []byte(getPublicDnsConf()), 0644)
-	// 移除所有 DNS 重定向，让客户端直连公共 DNS
+	// 清除旧规则
 	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "dstnat")
 	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "nat_output")
 	disableStandaloneDNSRedirect()
+	// 创建公共 DNS 转发（客户端 DNS → 223.5.5.5:53），避免 fake-ip 无法路由
+	enablePublicDNSForward()
+}
+
+// enablePublicDNSForward 客户端 DNS 请求直接转发到公共 DNS
+func enablePublicDNSForward() {
+	runNftSilent("add", "table", "ip", "nexusbox_dns")
+	runNftSilent("add", "chain", "ip", "nexusbox_dns", "dstnat", "{ type nat hook prerouting priority -100; policy accept; }")
+	runNftSilent("flush", "chain", "ip", "nexusbox_dns", "dstnat")
+	runNftSilent("add", "rule", "ip", "nexusbox_dns", "dstnat", "udp", "dport", "53", "dnat", "to", "223.5.5.5:53")
+	runNftSilent("add", "rule", "ip", "nexusbox_dns", "dstnat", "tcp", "dport", "53", "dnat", "to", "223.5.5.5:53")
 }
 
 // switchToMihomoDNS 切换回 Mihomo DNS
