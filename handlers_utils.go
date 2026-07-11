@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1067,15 +1068,16 @@ func stopDnsFailover() {
 
 // switchToPublicDNS 切换到公共 DNS
 func switchToPublicDNS() {
-	// 备份当前 resolv.conf
 	data, _ := os.ReadFile(dnsResolvConf)
 	os.WriteFile(dnsBackupPath, data, 0644)
 	os.WriteFile(dnsResolvConf, []byte(getPublicDnsConf()), 0644)
+	// 移除 nftables DNS 重定向，让客户端直连公共 DNS
+	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "dstnat")
+	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "nat_output")
 }
 
 // switchToMihomoDNS 切换回 Mihomo DNS
 func switchToMihomoDNS() {
-	// 如果有备份，恢复备份；否则直接写 mihomo DNS
 	if _, err := os.Stat(dnsBackupPath); err == nil {
 		data, _ := os.ReadFile(dnsBackupPath)
 		os.WriteFile(dnsResolvConf, data, 0644)
@@ -1083,6 +1085,14 @@ func switchToMihomoDNS() {
 	} else {
 		os.WriteFile(dnsResolvConf, []byte(mihomoDnsConf), 0644)
 	}
+	// 恢复 nftables DNS 重定向
+	dnsPort := getDNSListenPort()
+	runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+	runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+}
+
+func runNftSilent(args ...string) {
+	exec.Command("nft", args...).Run()
 }
 
 // handleDnsFailover 获取或设置 DNS 故障切换开关
