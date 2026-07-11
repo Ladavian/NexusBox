@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url" // 新增导入
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -440,22 +439,12 @@ func handleSelfUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 响应成功
+	// 响应成功，交由 systemd 重启
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "更新成功，即将重启"})
 
-	// 启动新进程并退出
 	go func() {
-		time.Sleep(200 * time.Millisecond)
-		cmd := exec.Command(targetPath, os.Args[1:]...)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Env = os.Environ()
-		if err := cmd.Start(); err != nil {
-			fmt.Printf("重启失败: %v\n", err)
-			return
-		}
+		time.Sleep(500 * time.Millisecond)
 		os.Exit(0)
 	}()
 }
