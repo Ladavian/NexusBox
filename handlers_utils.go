@@ -975,7 +975,11 @@ func startDnsFailover() {
 				mihomoDNSOK := running && canResolveViaMihomo()
 				netOK := canReachInternet()
 
-				needFailover := !running || !netOK
+				// 三个条件任一不满足就触发故障切换：
+				// 1. Mihomo 进程停止
+				// 2. 无法上网
+				// 3. Mihomo DNS 不响应（TUN/TProxy 挂了但进程还在）
+				needFailover := !running || !netOK || (running && !mihomoDNSOK)
 
 				if needFailover {
 					recoveryCount = 0
@@ -984,8 +988,10 @@ func startDnsFailover() {
 						onPublicDNS = true
 						if !running {
 							log.Printf("[DNS] Mihomo 已停止，切换至公共 DNS")
+						} else if running && !mihomoDNSOK {
+							log.Printf("[DNS] Mihomo DNS 无响应（TUN/TProxy 可能未正常工作），切换至公共 DNS")
 						} else {
-							log.Printf("[DNS] 网络不通（Mihomo 运行中但无法上网），切换至公共 DNS")
+							log.Printf("[DNS] 网络不通，切换至公共 DNS")
 						}
 					}
 				} else if onPublicDNS {
