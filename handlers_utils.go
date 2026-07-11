@@ -1016,6 +1016,8 @@ func startDnsFailover() {
 				ticker.Stop()
 				if isCoreRunning() && canReachInternet() {
 					switchToMihomoDNS()
+				} else {
+					disableStandaloneDNSRedirect()
 				}
 				return
 			}
@@ -1073,9 +1075,10 @@ func switchToPublicDNS() {
 	data, _ := os.ReadFile(dnsResolvConf)
 	os.WriteFile(dnsBackupPath, data, 0644)
 	os.WriteFile(dnsResolvConf, []byte(getPublicDnsConf()), 0644)
-	// 移除 nftables DNS 重定向，让客户端直连公共 DNS
+	// 移除所有 DNS 重定向，让客户端直连公共 DNS
 	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "dstnat")
 	runNftSilent("flush", "chain", "ip", "nexusbox_tproxy", "nat_output")
+	disableStandaloneDNSRedirect()
 }
 
 // switchToMihomoDNS 切换回 Mihomo DNS
@@ -1087,17 +1090,23 @@ func switchToMihomoDNS() {
 	} else {
 		os.WriteFile(dnsResolvConf, []byte(mihomoDnsConf), 0644)
 	}
-	// 仅当 TProxy 启用时才恢复 nftables DNS 重定向
-	tproxyMu.RLock()
-	tproxyOn := tproxyEnableState
-	tproxyMu.RUnlock()
-	if tproxyOn {
-		dnsPort := getDNSListenPort()
-		runNftSilent("add", "table", "ip", "nexusbox_tproxy")
-		runNftSilent("add", "chain", "ip", "nexusbox_tproxy", "dstnat", "{ type nat hook prerouting priority -100; policy accept; }")
-		runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
-		runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
-	}
+	// 独立 DNS 重定向：确保客户端 DNS 请求总能到达 Mihomo
+	enableStandaloneDNSRedirect()
+}
+
+// enableStandaloneDNSRedirect 创建独立的 DNS 重定向（不依赖 TProxy/TUN）
+func enableStandaloneDNSRedirect() {
+	dnsPort := getDNSListenPort()
+	runNftSilent("add", "table", "ip", "nexusbox_dns")
+	runNftSilent("add", "chain", "ip", "nexusbox_dns", "dstnat", "{ type nat hook prerouting priority -100; policy accept; }")
+	runNftSilent("flush", "chain", "ip", "nexusbox_dns", "dstnat")
+	runNftSilent("add", "rule", "ip", "nexusbox_dns", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+	runNftSilent("add", "rule", "ip", "nexusbox_dns", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+}
+
+// disableStandaloneDNSRedirect 移除独立 DNS 重定向
+func disableStandaloneDNSRedirect() {
+	runNftSilent("delete", "table", "ip", "nexusbox_dns")
 }
 
 func runNftSilent(args ...string) {
