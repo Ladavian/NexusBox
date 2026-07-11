@@ -29,6 +29,9 @@ const messages = {
     'update.updating': '更新中...',
     'update.update_started': '正在更新，请稍后...',
     'update.update_failed': '更新失败',
+    'update.check': '检查更新',
+    'update.found': '发现新版本 {version}',
+    'update.up_to_date': '已是最新版本',
 
 
 
@@ -507,6 +510,9 @@ const messages = {
     'update.updating': 'Updating...',
     'update.update_started': 'Updating, please wait...',
     'update.update_failed': 'Update failed',
+    'update.check': 'Check for updates',
+    'update.found': 'New version {version} available',
+    'update.up_to_date': 'Already up to date',
 
     'nav.overview': 'Overview',
     'nav.overview_desc': 'Dashboard',

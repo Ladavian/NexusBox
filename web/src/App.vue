@@ -25,7 +25,9 @@ import {
   CloseCircleOutline,
   AlertCircleOutline,
   CloseOutline,
-  PaperPlaneOutline
+  PaperPlaneOutline,
+  RefreshOutline,
+  SyncOutline
 } from '@vicons/ionicons5'
 
 // 视图组件导入
@@ -176,6 +178,29 @@ const handleSelfUpdate = async () => {
     globalStore.showToast(t('update.update_failed') + ': ' + (e as Error).message, 'error')
   } finally {
     isUpdatingSelf.value = false
+  }
+}
+
+// 手动检查更新
+const isChecking = ref(false)
+const checkForUpdate = async () => {
+  if (isChecking.value) return
+  isChecking.value = true
+  try {
+    const resp = await apiFetch(`/check-update?current=${appVersion}`)
+    if (resp.ok) {
+      const data = await resp.json()
+      globalStore.updateInfo = data
+      if (data.hasUpdate) {
+        globalStore.showToast(t('update.found', { version: data.latest }), 'info')
+      } else {
+        globalStore.showToast(t('update.up_to_date'), 'success')
+      }
+    }
+  } catch (e) {
+    console.error('检查更新失败', e)
+  } finally {
+    isChecking.value = false
   }
 }
 
@@ -537,6 +562,10 @@ onUnmounted(() => {
                   {{ isUpdatingSelf ? t('update.updating') : t('update.update_button', { latest: globalStore.updateInfo.latest }) }}
                 </button>
                 <!-- 版本号 -->
+                <button @click="checkForUpdate" :disabled="isChecking" class="p-0.5 text-slate-400 hover:text-accent transition-colors" :title="t('update.check')">
+                  <SyncOutline v-if="isChecking" class="w-3 h-3 animate-spin" />
+                  <RefreshOutline v-else class="w-3 h-3" />
+                </button>
                 <span class="font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">v{{ appVersion }}</span>
               </div>
             </div>
