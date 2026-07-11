@@ -209,32 +209,24 @@ func handleProxyIPv6(w http.ResponseWriter, r *http.Request) {
 
 // getProxyPortFromConfig 从内核配置中获取代理端口
 func getProxyPortFromConfig() int {
-	resp, err := coreRequest("GET", "/configs", nil)
+	// 直接从 config.yaml 读取，不依赖 Mihomo 核心
+	data, err := os.ReadFile(configTarget)
 	if err != nil {
 		return 0
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 0
-	}
-	var cfg map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&cfg); err != nil {
-		return 0
-	}
+	text := string(data)
 	// 优先 mixed-port
-	if p, ok := cfg["mixed-port"]; ok {
-		if port, ok := p.(float64); ok && port > 0 {
-			return int(port)
+	re := regexp.MustCompile(`(?m)^mixed-port:\s*(\d+)`)
+	if m := re.FindStringSubmatch(text); len(m) > 1 {
+		if port, err := strconv.Atoi(m[1]); err == nil && port > 0 {
+			return port
 		}
 	}
-	if p, ok := cfg["port"]; ok {
-		if port, ok := p.(float64); ok && port > 0 {
-			return int(port)
-		}
-	}
-	if p, ok := cfg["socks-port"]; ok {
-		if port, ok := p.(float64); ok && port > 0 {
-			return int(port)
+	// fallback: port
+	re = regexp.MustCompile(`(?m)^port:\s*(\d+)`)
+	if m := re.FindStringSubmatch(text); len(m) > 1 {
+		if port, err := strconv.Atoi(m[1]); err == nil && port > 0 {
+			return port
 		}
 	}
 	return 0
