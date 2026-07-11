@@ -432,12 +432,6 @@ func handleTproxyState(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// 如果要开启 TProxy，检查 TUN 状态
-		if req.Enable && isTUNEnabled() {
-			writeJSONError(w, http.StatusConflict, "TUN 已启用，请先关闭 TUN 再开启 TProxy。两者不可同时使用。")
-			return
-		}
-
 		tproxyMu.Lock()
 		tproxyEnableState = req.Enable
 		tproxyMu.Unlock()

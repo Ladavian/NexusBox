@@ -224,10 +224,6 @@ const toggleTProxy = async (enable: boolean) => {
   
   if (resp.ok) {
     // 开关状态已由 v-model 双向绑定自动更新
-  } else if (resp.status === 409) {
-    // TUN 冲突
-    configStore.tproxyEnabled = false
-    globalStore.showToast(t('config.tproxy_tun_conflict'), 'error')
   } else {
     configStore.tproxyEnabled = !enable
     globalStore.showToast(t('common.operation_failed'), 'error')
