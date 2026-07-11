@@ -1042,11 +1042,13 @@ func canReachInternet() bool {
 
 // canResolveViaMihomo 测试 Mihomo DNS 是否正常工作
 func canResolveViaMihomo() bool {
+	dnsPort := getDNSListenPort()
+	addr := fmt.Sprintf("127.0.0.1:%d", dnsPort)
 	c := &net.Resolver{
 		PreferGo: true,
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			d := net.Dialer{Timeout: 2 * time.Second}
-			return d.DialContext(ctx, "udp", "127.0.0.1:53")
+			return d.DialContext(ctx, "udp", addr)
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -1085,10 +1087,17 @@ func switchToMihomoDNS() {
 	} else {
 		os.WriteFile(dnsResolvConf, []byte(mihomoDnsConf), 0644)
 	}
-	// 恢复 nftables DNS 重定向
-	dnsPort := getDNSListenPort()
-	runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
-	runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+	// 仅当 TProxy 启用时才恢复 nftables DNS 重定向
+	tproxyMu.RLock()
+	tproxyOn := tproxyEnableState
+	tproxyMu.RUnlock()
+	if tproxyOn {
+		dnsPort := getDNSListenPort()
+		runNftSilent("add", "table", "ip", "nexusbox_tproxy")
+		runNftSilent("add", "chain", "ip", "nexusbox_tproxy", "dstnat", "{ type nat hook prerouting priority -100; policy accept; }")
+		runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "udp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+		runNftSilent("add", "rule", "ip", "nexusbox_tproxy", "dstnat", "tcp", "dport", "53", "redirect", "to", fmt.Sprintf(":%d", dnsPort))
+	}
 }
 
 func runNftSilent(args ...string) {
