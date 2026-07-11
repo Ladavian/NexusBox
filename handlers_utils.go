@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -953,8 +954,21 @@ func startDnsFailover() {
 	ticker := time.NewTicker(3 * time.Second)
 
 	go func() {
-		// 记录当前状态
 		lastCoreWasRunning = isCoreRunning()
+		lastNetOK := canReachInternet()
+		recoveryCount := 0
+		onPublicDNS := false // 当前是否使用公共 DNS
+
+		if !lastCoreWasRunning || !lastNetOK {
+			switchToPublicDNS()
+			onPublicDNS = true
+			if !lastCoreWasRunning {
+				log.Printf("[DNS] 启动检测：Mihomo 未运行，切换至公共 DNS")
+			} else {
+				log.Printf("[DNS] 启动检测：网络不通，切换至公共 DNS")
+			}
+		}
+
 		for {
 			select {
 			case <-ticker.C:
@@ -966,28 +980,80 @@ func startDnsFailover() {
 				}
 
 				running := isCoreRunning()
-				if running != lastCoreWasRunning {
-					if !running {
-						// mihomo 宕机 → 切公共 DNS
+				mihomoDNSOK := running && canResolveViaMihomo()
+				netOK := canReachInternet()
+
+				needFailover := !running || !netOK
+
+				if needFailover {
+					recoveryCount = 0
+					if !onPublicDNS {
 						switchToPublicDNS()
-						log.Printf("[DNS] Mihomo 已停止，切换至公共 DNS")
-					} else {
-						// mihomo 恢复 → 切 mihomo DNS
-						switchToMihomoDNS()
-						log.Printf("[DNS] Mihomo 已恢复，切换回 Mihomo DNS")
+						onPublicDNS = true
+						if !running {
+							log.Printf("[DNS] Mihomo 已停止，切换至公共 DNS")
+						} else {
+							log.Printf("[DNS] 网络不通（Mihomo 运行中但无法上网），切换至公共 DNS")
+						}
 					}
-					lastCoreWasRunning = running
+				} else if onPublicDNS {
+					// 在公共 DNS 下，等 Mihomo DNS 真正恢复才切回
+					if mihomoDNSOK {
+						recoveryCount++
+						if recoveryCount >= 3 {
+							switchToMihomoDNS()
+							onPublicDNS = false
+							log.Printf("[DNS] Mihomo DNS 已恢复，切换回 Mihomo DNS")
+							recoveryCount = 0
+						}
+					} else {
+						recoveryCount = 0
+					}
 				}
+
+				lastCoreWasRunning = running
+				lastNetOK = netOK
 			case <-dnsFailoverStop:
 				ticker.Stop()
-				// 退出时恢复 mihomo DNS
-				if isCoreRunning() {
+				if isCoreRunning() && canReachInternet() {
 					switchToMihomoDNS()
 				}
 				return
 			}
 		}
 	}()
+}
+
+// canReachInternet 测试是否能正常上网（双目标确认，避免误判）
+func canReachInternet() bool {
+	client := &http.Client{Timeout: 3 * time.Second}
+	targets := []string{"http://www.baidu.com", "http://223.5.5.5"}
+	ok := 0
+	for _, u := range targets {
+		resp, err := client.Get(u)
+		if err == nil {
+			resp.Body.Close()
+			if resp.StatusCode > 0 {
+				ok++
+			}
+		}
+	}
+	return ok > 0 // 至少一个可达
+}
+
+// canResolveViaMihomo 测试 Mihomo DNS 是否正常工作
+func canResolveViaMihomo() bool {
+	c := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 2 * time.Second}
+			return d.DialContext(ctx, "udp", "127.0.0.1:53")
+		},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err := c.LookupHost(ctx, "www.baidu.com")
+	return err == nil
 }
 
 // stopDnsFailover 停止 DNS 故障切换
