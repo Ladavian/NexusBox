@@ -974,6 +974,7 @@ func startDnsFailover() {
 
 				running := isCoreRunning()
 				netOK := canReachInternet()
+				// debug removed
 
 				// 进程不在或 TCP 不通 → 故障切换
 				needFailover := !running || !netOK
